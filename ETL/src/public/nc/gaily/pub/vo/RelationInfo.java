@@ -9,6 +9,7 @@ import nc.vo.pub.lang.UFDouble;
 import nc.vo.pubapp.pattern.model.meta.entity.vo.VOMetaFactory;
 
 public class RelationInfo extends SuperVO {
+	private static final long serialVersionUID = 6215609176827681391L;
 /**
 *д╛хож╣
 */
