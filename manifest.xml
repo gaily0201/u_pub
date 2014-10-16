@@ -13,9 +13,6 @@
     <test>
       <src name="src/test"/>
     </test>
-    <resource>
-      <src name="resources"/>
-    </resource>
     <funnodes/>
   </BusinessComponet>
   <BusinessComponet name="ETL" dispname="数据迁移">
