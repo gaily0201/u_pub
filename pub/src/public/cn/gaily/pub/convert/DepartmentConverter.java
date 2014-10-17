@@ -10,7 +10,7 @@ import nc.bs.framework.common.NCLocator;
 import nc.vo.pub.BusinessException;
 import cn.gaily.pub.itf.IBaseService;
 import cn.gaily.pub.util.CommonUtil;
-import cn.gaily.pub.util.ExcelUtil;
+import cn.gaily.pub.util.ExcelImporter;
 
 /**
  * <p>Title: DepartmentConverter</P>
@@ -36,7 +36,7 @@ public class DepartmentConverter {
 	
 	@SuppressWarnings("unused")
 	private static void beforeConvert(File sourceFile,String sheetName) throws IOException, BusinessException{
-		Map<String,List<String>> map = ExcelUtil.doImport(sourceFile);
+		Map<String,List<String>> map = ExcelImporter.doImport(sourceFile);
 		List<String> values = map.get(sheetName);
 		if(values==null||values.size()<=0){
 			return;

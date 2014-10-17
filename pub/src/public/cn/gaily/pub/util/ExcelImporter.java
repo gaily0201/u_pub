@@ -32,7 +32,7 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook;
  * @version 1.0
  * @since 2014-10-13
  */
-public class ExcelUtil {
+public class ExcelImporter {
 	
 	String ENTER = "\n";
 	
