@@ -7,12 +7,7 @@ import nc.vo.pubapp.pattern.model.meta.entity.bill.IBillMeta;
 @nc.vo.annotation.AggVoInfo(parentVO = "nc.gaily.pub.vo.BaseInfo")
 public class AggBaseInfo extends AbstractBill {
 
-  /**
-	 * 
-	 */
-	private static final long serialVersionUID = 8109830895242151223L;
-
-@Override
+  @Override
   public IBillMeta getMetaData() {
     IBillMeta billMeta =BillMetaFactory.getInstance().getBillMeta(AggBaseInfoMeta.class);
     return billMeta;

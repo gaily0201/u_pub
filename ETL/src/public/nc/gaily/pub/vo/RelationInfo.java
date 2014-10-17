@@ -9,7 +9,6 @@ import nc.vo.pub.lang.UFDouble;
 import nc.vo.pubapp.pattern.model.meta.entity.vo.VOMetaFactory;
 
 public class RelationInfo extends SuperVO {
-	private static final long serialVersionUID = 6215609176827681391L;
 /**
 *默认值
 */
@@ -27,7 +26,7 @@ public static final String DSTCOLTYPE="dstcoltype";
 */
 public static final String DSTCOLUMN="dstcolumn";
 /**
-*目标是否为时间格式
+*目标是否为日期格式
 */
 public static final String DSTISDATETIME="dstisdatetime";
 /**
@@ -71,11 +70,11 @@ public static final String SRCCOLTYPE="srccoltype";
 */
 public static final String SRCCOLUMN="srccolumn";
 /**
-*源是否为时间格式
+*源是否为日期格式
 */
 public static final String SRCISDATETIME="srcisdatetime";
 /**
-*源是否为参照格式
+*源是否为参照
 */
 public static final String SRCISREF="srcisref";
 /**
@@ -171,18 +170,18 @@ this.setAttributeValue( RelationInfo.DSTCOLUMN,dstcolumn);
  } 
 
 /** 
-* 获取目标是否为时间格式
+* 获取目标是否为日期格式
 *
-* @return 目标是否为时间格式
+* @return 目标是否为日期格式
 */
 public String getDstisdatetime () {
 return (String) this.getAttributeValue( RelationInfo.DSTISDATETIME);
  } 
 
 /** 
-* 设置目标是否为时间格式
+* 设置目标是否为日期格式
 *
-* @param dstisdatetime 目标是否为时间格式
+* @param dstisdatetime 目标是否为日期格式
 */
 public void setDstisdatetime ( String dstisdatetime) {
 this.setAttributeValue( RelationInfo.DSTISDATETIME,dstisdatetime);
@@ -369,36 +368,36 @@ this.setAttributeValue( RelationInfo.SRCCOLUMN,srccolumn);
  } 
 
 /** 
-* 获取源是否为时间格式
+* 获取源是否为日期格式
 *
-* @return 源是否为时间格式
+* @return 源是否为日期格式
 */
 public String getSrcisdatetime () {
 return (String) this.getAttributeValue( RelationInfo.SRCISDATETIME);
  } 
 
 /** 
-* 设置源是否为时间格式
+* 设置源是否为日期格式
 *
-* @param srcisdatetime 源是否为时间格式
+* @param srcisdatetime 源是否为日期格式
 */
 public void setSrcisdatetime ( String srcisdatetime) {
 this.setAttributeValue( RelationInfo.SRCISDATETIME,srcisdatetime);
  } 
 
 /** 
-* 获取源是否为参照格式
+* 获取源是否为参照
 *
-* @return 源是否为参照格式
+* @return 源是否为参照
 */
 public String getSrcisref () {
 return (String) this.getAttributeValue( RelationInfo.SRCISREF);
  } 
 
 /** 
-* 设置源是否为参照格式
+* 设置源是否为参照
 *
-* @param srcisref 源是否为参照格式
+* @param srcisref 源是否为参照
 */
 public void setSrcisref ( String srcisref) {
 this.setAttributeValue( RelationInfo.SRCISREF,srcisref);

@@ -14,11 +14,19 @@ public class BaseInfo extends SuperVO {
 */
 public static final String BATCHSIZE="batchsize";
 /**
+*创建时间
+*/
+public static final String BILLDATE="billdate";
+/**
+*创建人
+*/
+public static final String BILLMAKER="billmaker";
+/**
 *目标数据源
 */
 public static final String DSTDATASOURCE="dstdatasource";
 /**
-*目标表名称
+*目标表名
 */
 public static final String DSTTABNAME="dsttabname";
 /**
@@ -29,6 +37,14 @@ public String id;
 *是否批量
 */
 public static final String ISBATCH="isbatch";
+/**
+*修改时间
+*/
+public static final String MODIFIEDTIME="modifiedtime";
+/**
+*修改人
+*/
+public static final String MODIFIER="modifier";
 /**
 *备注
 */
@@ -64,6 +80,42 @@ this.setAttributeValue( BaseInfo.BATCHSIZE,batchsize);
  } 
 
 /** 
+* 获取创建时间
+*
+* @return 创建时间
+*/
+public UFDate getBilldate () {
+return (UFDate) this.getAttributeValue( BaseInfo.BILLDATE);
+ } 
+
+/** 
+* 设置创建时间
+*
+* @param billdate 创建时间
+*/
+public void setBilldate ( UFDate billdate) {
+this.setAttributeValue( BaseInfo.BILLDATE,billdate);
+ } 
+
+/** 
+* 获取创建人
+*
+* @return 创建人
+*/
+public String getBillmaker () {
+return (String) this.getAttributeValue( BaseInfo.BILLMAKER);
+ } 
+
+/** 
+* 设置创建人
+*
+* @param billmaker 创建人
+*/
+public void setBillmaker ( String billmaker) {
+this.setAttributeValue( BaseInfo.BILLMAKER,billmaker);
+ } 
+
+/** 
 * 获取目标数据源
 *
 * @return 目标数据源
@@ -82,18 +134,18 @@ this.setAttributeValue( BaseInfo.DSTDATASOURCE,dstdatasource);
  } 
 
 /** 
-* 获取目标表名称
+* 获取目标表名
 *
-* @return 目标表名称
+* @return 目标表名
 */
 public String getDsttabname () {
 return (String) this.getAttributeValue( BaseInfo.DSTTABNAME);
  } 
 
 /** 
-* 设置目标表名称
+* 设置目标表名
 *
-* @param dsttabname 目标表名称
+* @param dsttabname 目标表名
 */
 public void setDsttabname ( String dsttabname) {
 this.setAttributeValue( BaseInfo.DSTTABNAME,dsttabname);
@@ -133,6 +185,42 @@ return (String) this.getAttributeValue( BaseInfo.ISBATCH);
 */
 public void setIsbatch ( String isbatch) {
 this.setAttributeValue( BaseInfo.ISBATCH,isbatch);
+ } 
+
+/** 
+* 获取修改时间
+*
+* @return 修改时间
+*/
+public UFDateTime getModifiedtime () {
+return (UFDateTime) this.getAttributeValue( BaseInfo.MODIFIEDTIME);
+ } 
+
+/** 
+* 设置修改时间
+*
+* @param modifiedtime 修改时间
+*/
+public void setModifiedtime ( UFDateTime modifiedtime) {
+this.setAttributeValue( BaseInfo.MODIFIEDTIME,modifiedtime);
+ } 
+
+/** 
+* 获取修改人
+*
+* @return 修改人
+*/
+public String getModifier () {
+return (String) this.getAttributeValue( BaseInfo.MODIFIER);
+ } 
+
+/** 
+* 设置修改人
+*
+* @param modifier 修改人
+*/
+public void setModifier ( String modifier) {
+this.setAttributeValue( BaseInfo.MODIFIER,modifier);
  } 
 
 /** 
