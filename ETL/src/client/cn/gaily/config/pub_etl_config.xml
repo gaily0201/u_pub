@@ -17,32 +17,6 @@
 		<property name="businessObjectAdapterFactory" ref="boadatorfactory"></property>
 		<property name="context" ref="context"></property>
 	</bean>
-	<bean id="modelDataManager" class="nc.ui.pubapp.uif2app.model.pagination.PaginationModelDataManager">
-		<property name="model" ref="manageAppModel"></property>
-		<property name="paginationModel" ref="paginationModel" />
-		<property name="pageQueryService" ref="maintainProxy" />
-	</bean>
-	<!-- 分页查询服务 -->
-	<bean id="pageQueryService"
-		class="nc.ui.pubapp.uif2app.model.pagination.UIPageQueryService">
-		<property name="allPagePkQueryServiceMethod"
-			value="cn.gaily.itf.IEtlMaintain.queryPKs"></property>
-		<property name="dataOfPksQueryServiceMethod"
-			value="cn.gaily.itf.IEtlMaintain.queryBillByPK"></property>
-	</bean>
-	<!-- 分页栏 -->
-	<bean id="paginationBar" class="nc.ui.uif2.components.pagination.PaginationBar"
-		init-method="onStructChanged">
-		<property name="paginationModel" ref="paginationModel" />
-	</bean>
-	<bean id="paginationModel" class="nc.ui.pubapp.uif2app.model.pagination.PubPaginationModel"
-		init-method="init">
-		<property name="paginationQueryService" ref="maintainProxy" />
-	</bean>
-	<bean id="paginationBar" class="nc.ui.uif2.components.pagination.PaginationBar"
-		init-method="onStructChanged">
-		<property name="paginationModel" ref="paginationModel" />
-	</bean>
 	<!-- 模板容器，负责对模板的统一装载 -->
 	<bean id="templateContainer" class="nc.ui.pubapp.uif2app.view.TemplateContainer">
 		<property name="context" ref="context" />
@@ -61,7 +35,6 @@
 	<!-- 列表视图 -->
 	<bean id="listView" class="nc.ui.pubapp.uif2app.view.ShowUpableBillListView"
 		init-method="initUI">
-		<property name="paginationBar" ref="paginationBar" />
 		<property name="model" ref="manageAppModel"></property>
 		<property name="templateContainer" ref="templateContainer"></property>
 	</bean>
@@ -71,6 +44,8 @@
 		<property name="model" ref="manageAppModel"></property>
 		<property name="templateContainer" ref="templateContainer" />
 		<property name="showTotalLine" value="false"></property>
+		<property name="showOrgPanel" value="false" />
+		<property name="nodekey" value="bt" />
 		<!-- 是否自动增行 -->
 		<property name="autoAddLine" value="false" />
 		<!-- 表体行操作按钮注册，与表体右键菜单保持一致 -->
@@ -170,20 +145,17 @@
 		<property name="handlerGroup">
 			<list>
 				<bean class="nc.ui.pubapp.uif2app.event.EventHandlerGroup">
-					<property name="event" value="nc.ui.pubapp.uif2app.event.card.CardHeadTailAfterEditEvent"
-						/>
+					<property name="event" value="nc.ui.pubapp.uif2app.event.card.CardHeadTailBeforeEditEvent"/>
 					<property name="handler">
-						<bean class="cn.gaily.handle.ETLHeadTailAfterEditHandle" />
+						<bean class="cn.gaily.handle.ETLHeadTailBeforeEditHandle" />
 					</property>
 				</bean>
 				<!-- 表体字段编辑前事件 -->
 				<bean class="nc.ui.pubapp.uif2app.event.EventHandlerGroup">
-					<property name="event" value="nc.ui.pubapp.uif2app.event.card.CardBodyBeforeEditEvent"
-						/>
+					<property name="event" value="nc.ui.pubapp.uif2app.event.card.CardBodyBeforeEditEvent"/>
 					<property name="picky" ref="childrenPicky" />
 					<property name="handler">
-						<bean class="cn.gaily.handle.ETLBodyTailAfterEditHandle">
-						</bean>
+						<bean class="cn.gaily.handle.ETLBodyBeforeEditHandle"/>
 					</property>
 				</bean>
 			</list>
@@ -210,7 +182,7 @@
 			<list>
 				<ref bean="addAction" />
 				<ref bean="editAction" />
-				<ref bean="deleteAction" />
+<!--				<ref bean="deleteAction" />-->
 			</list>
 		</property>
 	</bean>
@@ -224,7 +196,7 @@
 			<list>
 				<ref bean="addAction" />
 				<ref bean="editAction" />
-				<ref bean="deleteAction" />
+<!--				<ref bean="deleteAction" />-->
 				<ref bean="separatorAction" />
 
 			</list>
@@ -260,12 +232,12 @@
 	</bean>
 	<bean id="deleteAction" class="nc.ui.pubapp.uif2app.actions.DeleteAction">
 		<property name="model" ref="manageAppModel" />
-		<property name="singleBillService" ref="maintainProxy" />
+		<property name="editor" ref="billFormEditor" />
+		<property name="actionName" value="DELETE" />
 	</bean>
 	<bean id="saveAction" class="nc.ui.pubapp.uif2app.actions.DifferentVOSaveAction">
 		<property name="model" ref="manageAppModel" />
 		<property name="editor" ref="billFormEditor" />
-		<property name="service" ref="maintainProxy" />
 		<property name="validationService" ref="validateService" />
 	</bean>
 	<!-- 分隔按钮 -->
@@ -288,7 +260,6 @@
 	<!-- 查询按钮 -->
 	<bean id="queryAction" class="nc.ui.pubapp.uif2app.query2.action.DefaultQueryAction">
 		<property name="model" ref="manageAppModel" />
-		<property name="dataManager" ref="modelDataManager" />
 		<property name="showUpComponent" ref="listView" />
 		<property name="templateContainer" ref="queryTemplateContainer" />
 	</bean>

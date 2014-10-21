@@ -25,16 +25,26 @@ public class FileUtil {
 	static FileInputStream fis = null;
 	static FileOutputStream fos = null;
 	static String fileSuffix = ".jpg";
+//	static String fileSuffix = ".doc";
 	
 	
-	public static void saveBlobFile(File path, int pageSize, int round) throws IOException{
-		String sql = "SELECT result.FILES,result.FILENAME,result.SCANAJBH FROM (SELECT T.*, ROWNUM RN FROM (SELECT * FROM SCANTABLE) T WHERE ROWNUM <= "+(pageSize*(round+1))+") RESULT WHERE RN > "+pageSize*round;
-//		String sql = "SELECT FILES,FILENAME,SCANAJBH FROM SCANTABLE";
+	public static void saveBlobFile(File path,String tableName, int pageSize, int round) throws IOException{
+//		String sql = "SELECT result.FILES,result.FILENAME,result.SCANAJBH,result.AJMC FROM (SELECT T.*, ROWNUM RN FROM (SELECT * FROM "+tableName+" A LEFT JOIN AJ_JBXX B ON A.SCANAJBH=B.AJBH) T WHERE ROWNUM <= "+(pageSize*(round+1))+") RESULT WHERE RN > "+pageSize*round;
+		String sql = "SELECT A.FILES,A.FILENAME,A.SCANAJBH,B.AJMC FROM "+tableName+" A LEFT JOIN AJ_JBXX B ON A.SCANAJBH=B.AJBH"; //扫描件
+//		String sql = "SELECT WSGS,WSBT FROM WSMANAGE"; //文书模板
+//		String sql = "SELECT a.wsnr,a.wsbtmc,a.ajbh,b.ajmc from "+tableName+" a, aj_jbxx b WHERE a.ajbh=b.ajbh"; //公安文书
+		/**
+		 *  SELECT a.wsnr,a.wsbtmc,a.ajbh,b.ajmc from aj_flws_ga a, aj_jbxx b WHERE a.ajbh=b.ajbh;
+			SELECT a.wsnr,a.wsbtmc,a.ajbh,b.ajmc from aj_flws_jcy a, aj_jbxx b WHERE a.ajbh=b.ajbh;
+			SELECT a.wsnr,a.wsbtmc,a.ajbh,b.ajmc from aj_flws_sfj a, aj_jbxx b WHERE a.ajbh=b.ajbh;
+			SELECT a.wsnr,a.wsbtmc,a.ajbh,b.ajmc from aj_flws_fy a, aj_jbxx b WHERE a.ajbh=b.ajbh;
+			SELECT a.wsnr,a.wsbtmc,a.ajbh,b.ajmc from aj_flws_bak a, aj_jbxx b WHERE a.ajbh=b.ajbh;
+		 */
 		if(!path.exists()){
 			path.mkdirs();
 		}
 		if(conn==null){
-//			conn = JdbcUtils.getConnection("szgjf", "1", "192.168.1.100", "orcl");
+			conn = JdbcUtils.getConnection("szgjf", "1", "192.168.1.100", "orcl");
 		}
 		try {
 			pst = conn.prepareStatement(sql);
@@ -42,19 +52,31 @@ public class FileUtil {
 			Blob blob = null;
 			String fileName = null;
 			String ajbh = null;
+			String ajmc = null;
 			File filePath = null;
 			File savePath = null;
 			int len = 0;
 			byte[] buf = new byte[1024]; 
+			String strPath = null;
+			int i=0;
 			while(rs.next()){
 				blob = rs.getBlob(1);
 				fileName = rs.getString(2);
 				ajbh = rs.getString(3);
-				filePath = new File(path+File.separator+ajbh);
-				if(!filePath.exists()){
-					filePath.mkdir();
+				ajmc = rs.getString(4);
+				if(CommonUtil.isNotEmpty(ajmc)&&ajmc.contains("\"")){
+					ajmc = ajmc.replace('\"', '_');
 				}
-				savePath = new File(filePath+File.separator+fileName+fileSuffix);
+				if(CommonUtil.isNotEmpty(ajmc)&&ajmc.contains("\\")){
+					ajmc = ajmc.replace('\\', '_');
+				}
+				filePath = new File(path+File.separator+ajbh+"_"+ajmc);
+//				filePath = path;
+				if(!filePath.exists()){
+					filePath.mkdirs();
+				}
+				strPath = filePath+File.separator+fileName+fileSuffix;
+				savePath = new File(strPath);
 				if(savePath.exists()){
 					continue;
 				}
@@ -64,6 +86,7 @@ public class FileUtil {
 					while((len=in.read(buf))!=-1){
 						fos.write(buf, 0, len);
 					}
+					System.out.println(tableName+": "+ i++);
 					fos.flush();
 					fos.close();
 					in.close();

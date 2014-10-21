@@ -92,7 +92,7 @@ public class ExcelImporter {
 		
 		if(file.getPath().endsWith(".xlsx")){
 //			return new XSSFWorkbook(in);
-			return null;
+			throw new RuntimeException("暂且只支持.xls格式文件导入");
 		}else{
 			return new HSSFWorkbook(new POIFSFileSystem(in));
 		}
@@ -166,9 +166,18 @@ public class ExcelImporter {
 	
 	private static String getParsedLine(String[] values){
 		StringBuilder sb = new StringBuilder();
+		String value = null;
 		for (String string : values) {
 			sb.append(CSVUtil.csvEncode(string));
 			sb.append(",");
+		}
+		value = sb.toString();
+		while(true){
+			if(value.endsWith(",")){
+				value= sb.deleteCharAt(value.length()-1).toString();
+				continue;
+			}
+			break;
 		}
 		return sb.toString();
 	}
