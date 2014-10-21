@@ -19,7 +19,7 @@ public class BaseServiceImpl implements IBaseService {
 
 	IdGenerator generator = NCLocator.getInstance().lookup(IdGenerator.class);
 	
-	IUAPQueryBS query = NCLocator.getInstance().lookup(IUAPQueryBS.class);
+	public IUAPQueryBS query = NCLocator.getInstance().lookup(IUAPQueryBS.class);
 	
 	Logger logger = Logger.getLogger(BaseServiceImpl.class);
 	

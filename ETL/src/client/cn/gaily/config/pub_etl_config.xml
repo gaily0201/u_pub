@@ -17,6 +17,11 @@
 		<property name="businessObjectAdapterFactory" ref="boadatorfactory"></property>
 		<property name="context" ref="context"></property>
 	</bean>
+	
+	<bean id="dataManager" class="nc.ui.pubapp.uif2app.query2.model.ModelDataManager">
+		<property name="model" ref="manageAppModel"/>
+	</bean>
+	
 	<!-- 模板容器，负责对模板的统一装载 -->
 	<bean id="templateContainer" class="nc.ui.pubapp.uif2app.view.TemplateContainer">
 		<property name="context" ref="context" />
@@ -58,15 +63,6 @@
 			</list>
 		</property>
 	</bean>
-	<!-- 快速查询区域 -->
-	<bean id="queryArea" class="nc.ui.pubapp.uif2app.tangramlayout.UEQueryAreaShell"
-		init-method="initUI">
-		<property name="queryAreaCreator" ref="queryAction" />
-	</bean>
-	<!-- 查询信息栏 -->
-	<bean id="queryInfo" class="nc.ui.uif2.tangramlayout.CardLayoutToolbarPanel">
-		<property name="model" ref="manageAppModel" />
-	</bean>
 	<!-- 卡片界面的工具栏和返回按钮 -->
 	<bean id="cardInfoPnl" class="nc.ui.pubapp.uif2app.tangramlayout.UECardLayoutToolbarPanel">
 		<property name="titleAction">
@@ -86,30 +82,12 @@
 				<property name="showMode" value="CardLayout" />
 				<property name="tabs">
 					<list>
-						<bean class="nc.ui.uif2.tangramlayout.node.HSNode">
-							<property name="left">
-								<bean class="nc.ui.uif2.tangramlayout.node.CNode">
-									<property name="component" ref="queryArea" />
-								</bean>
-							</property>
-							<property name="right">
-								<bean class="nc.ui.uif2.tangramlayout.node.VSNode">
-									<property name="up">
-										<bean class="nc.ui.uif2.tangramlayout.node.CNode">
-											<property name="component" ref="queryInfo" />
-										</bean>
-									</property>
-									<property name="down">
-										<bean class="nc.ui.uif2.tangramlayout.node.CNode">
-											<property name="name" value="列表" />
-											<property name="component" ref="listView" />
-										</bean>
-									</property>
-									<property name="dividerLocation" value="25f" />
-								</bean>
-							</property>
-							<property name="dividerLocation" value="210f" />
+
+						<bean class="nc.ui.uif2.tangramlayout.node.CNode">
+							<property name="name" value="列表" />
+							<property name="component" ref="listView" />
 						</bean>
+						
 						<bean class="nc.ui.uif2.tangramlayout.node.VSNode">
 							<property name="up">
 								<bean class="nc.ui.uif2.tangramlayout.node.CNode">
@@ -129,6 +107,7 @@
 			</bean>
 		</property>
 	</bean>
+	
 	<!-- 事件监听 -->
 	<bean id="childrenPicky" class="nc.ui.pubapp.uif2app.event.ChildrenPicky">
 		<property name="billform" ref="billFormEditor" />
@@ -148,6 +127,12 @@
 					<property name="event" value="nc.ui.pubapp.uif2app.event.card.CardHeadTailBeforeEditEvent"/>
 					<property name="handler">
 						<bean class="cn.gaily.handle.ETLHeadTailBeforeEditHandle" />
+					</property>
+				</bean>
+				<bean class="nc.ui.pubapp.uif2app.event.EventHandlerGroup">
+					<property name="event" value="nc.ui.pubapp.uif2app.event.card.CardHeadTailAfterEditEvent"/>
+					<property name="handler">
+						<bean class="cn.gaily.handle.ETLHeadTailAfterEditHandle" />
 					</property>
 				</bean>
 				<!-- 表体字段编辑前事件 -->
@@ -182,7 +167,9 @@
 			<list>
 				<ref bean="addAction" />
 				<ref bean="editAction" />
-<!--				<ref bean="deleteAction" />-->
+				<ref bean="deleteAction" />
+				<ref bean="separatorAction" />
+				<ref bean="refreshAction" />
 			</list>
 		</property>
 	</bean>
@@ -196,8 +183,9 @@
 			<list>
 				<ref bean="addAction" />
 				<ref bean="editAction" />
-<!--				<ref bean="deleteAction" />-->
+				<ref bean="deleteAction" />
 				<ref bean="separatorAction" />
+				<ref bean="refreshAction" />
 
 			</list>
 		</property>
@@ -232,10 +220,8 @@
 	</bean>
 	<bean id="deleteAction" class="nc.ui.pubapp.uif2app.actions.DeleteAction">
 		<property name="model" ref="manageAppModel" />
-		<property name="editor" ref="billFormEditor" />
-		<property name="actionName" value="DELETE" />
 	</bean>
-	<bean id="saveAction" class="nc.ui.pubapp.uif2app.actions.DifferentVOSaveAction">
+	<bean id="saveAction" class="nc.ui.pubapp.uif2app.actions.SaveAction">
 		<property name="model" ref="manageAppModel" />
 		<property name="editor" ref="billFormEditor" />
 		<property name="validationService" ref="validateService" />
@@ -257,12 +243,11 @@
 		<property name="model" ref="manageAppModel" />
 	</bean>
 
-	<!-- 查询按钮 -->
-	<bean id="queryAction" class="nc.ui.pubapp.uif2app.query2.action.DefaultQueryAction">
+	<bean id="refreshAction" class="cn.gaily.action.RefreshAction">
 		<property name="model" ref="manageAppModel" />
-		<property name="showUpComponent" ref="listView" />
-		<property name="templateContainer" ref="queryTemplateContainer" />
+		<property name="dataManager" ref="dataManager"/>
 	</bean>
+	
 	<!-- 懒加载 -->
 	<bean id="billLazilyLoader" class="nc.ui.pubapp.uif2app.lazilyload.DefaultBillLazilyLoader"
 		/>

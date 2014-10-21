@@ -49,4 +49,10 @@ public class EtlMaintainImpl implements IEtlMaintain {
 		return null;
 	}
 
+	@Override
+	public Object[] queryByQueryScheme(IQueryScheme queryScheme)
+			throws Exception {
+		return null;
+	}
+
 }

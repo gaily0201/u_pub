@@ -266,7 +266,8 @@ public class CommonUtil {
 	public static final boolean isNotEmpty(String str) {
 	 return !isEmpty(str);
 	}
-	 
+	
+	
 	/**
 	 * <p>方法名称：arrayToList</p>
 	 * <p>方法描述：将数据转换为List</p>
