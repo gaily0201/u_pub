@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="gbk"?>
+<module name="pub">
+	<public>
+		<component priority="0" singleton="true" remote="true" tx="CMT" supportAlias="true" accessProtected="false">
+			<interface>cn.gaily.itf.IETLService</interface>
+			<implementation>cn.gaily.impl.ETLServiceImpl</implementation>
+		</component>
+	</public>
+</module>
