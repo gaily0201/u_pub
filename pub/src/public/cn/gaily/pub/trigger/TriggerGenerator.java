@@ -140,10 +140,15 @@ public class TriggerGenerator {
 		if(CommonUtil.isEmpty(tableName)){
 			throw new RuntimeException("传入的表名无效"); //TODO 真实还需检验数据表中该表是否存在
 		}
-		
+		String dsql = "DELETE XFL_TABSTATUS WHERE TABLENAME =?";
 		String sql = "INSERT INTO XFL_TABSTATUS (TABLENAME, STATUS) VALUES (?, '1')";
 		PreparedStatement st = null;
 		try {
+			st = conn.prepareStatement(dsql);
+			st.setString(1, tableName.toUpperCase().trim());
+			st.executeUpdate();
+			
+			st.clearParameters();
 			st = conn.prepareStatement(sql);
 			st.setString(1, tableName.toUpperCase().trim());
 			st.executeUpdate();
@@ -152,8 +157,6 @@ public class TriggerGenerator {
 		} finally{
 			JdbcUtils.release(null, st, null);
 		}
-		
-		
 	}
 	
 	/**
