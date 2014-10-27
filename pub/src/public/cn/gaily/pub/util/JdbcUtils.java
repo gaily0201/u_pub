@@ -69,6 +69,17 @@ public class JdbcUtils{
 		return conn;
 	}
 	
+	public static Connection getConnection(String userName, String password, String ip ,String dbName, String port){
+		conn = null;
+		try {
+			String url = "jdbc:oracle:thin:@"+ip+":"+port+":"+dbName.toUpperCase();
+			conn = DriverManager.getConnection(url, userName, password);
+		} catch (SQLException e) {
+			release(conn, st, rs);
+		}
+		return conn;
+	}
+	
 	public static Connection getConnectionThrowable(String userName, String password) throws SQLException{
 		conn = DriverManager.getConnection(URL, userName, password);
 		return conn;
