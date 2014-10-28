@@ -113,6 +113,8 @@ public class TriggerGenerator {
 				st = conn.createStatement();
 				st.executeUpdate("CREATE TABLE XFL_"+tableName+" AS SELECT * FROM "+tableName+" WHERE 1=0");
 				st.executeUpdate("ALTER TABLE XFL_"+tableName+" ADD ETLSTATUS CHAR(1)");
+				st.executeUpdate("ALTER TABLE XFL_"+tableName+" ADD ETLPKNAME VARCHAR2(50)");
+				st.executeUpdate("ALTER TABLE XFL_"+tableName+" ADD ETLTS VARCHAR2(100)");
 			}
 		} catch (SQLException e) {
 			e.printStackTrace();
@@ -187,23 +189,29 @@ public class TriggerGenerator {
 				sb.append(" AFTER DELETE ON ");
 				break;
 		}
-		sb.append(tableName).append(" FOR EACH ROW DECLARE ACTION NUMBER;");
-		sb.append("BEGIN SELECT STATUS INTO ACTION  FROM XFL_TABSTATUS WHERE TABLENAME='").append(tableName).append("';");
+		sb.append(tableName).append(" FOR EACH ROW DECLARE ACTION NUMBER; PKNAME VARCHAR2(50);");
+		sb.append("BEGIN SELECT STATUS INTO ACTION  FROM XFL_TABSTATUS WHERE TABLENAME='");
+		sb.append(tableName).append("';");  //status
+		sb.append(" SELECT A.COLUMN_NAME INTO PKNAME FROM USER_CONS_COLUMNS A, USER_CONSTRAINTS B");
+		sb.append(" WHERE A.CONSTRAINT_NAME = B.CONSTRAINT_NAME");
+		sb.append(" AND B.CONSTRAINT_TYPE = 'P'  AND A.TABLE_NAME ='");
+		sb.append(tableName).append("';"); //pkname
 		sb.append("IF(ACTION=1) THEN INSERT INTO XFL_").append(tableName);
 		Map<Integer,String> map = getTableCols(tableName, 1);
 		sb.append(map.get(1));
-		sb.append("ETLSTATUS) VALUES "); //--ETLSTATUS 数据状态
+		sb.append("ETLSTATUS, ETLPKNAME, ETLTS) VALUES "); //--ETLSTATUS 数据状态
 		switch(type){
 		case NEW: 
-			sb.append(map.get(2)).append("1); ");
+			sb.append(map.get(2)).append("1,");
 			break;
 		case UPDATE: 
-			sb.append(map.get(2)).append("2); ");
+			sb.append(map.get(2)).append("2,");
 			break;
 		case DELETE: 
-			sb.append(map.get(3)).append("3); ");
+			sb.append(map.get(3)).append("3,");
 			break;
 		}
+		sb.append("NVL(PKNAME,''), TO_CHAR(current_timestamp,'YYYYMMDDHH24MISSXFF'));");
 		sb.append("END IF;");
 		sb.append("EXCEPTION WHEN OTHERS THEN  NULL; END;");
 		return sb.toString();
