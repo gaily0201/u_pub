@@ -41,11 +41,11 @@ public class TriggerGenerator {
 	 */
 	public void generate(String tableName, Integer type, boolean fullBuild){
 		
-		checkTempExist(tableName); //检验临时表是否存在，不存在创建
+		checkTempExist(tableName); 	//1、检验临时表是否存在，不存在创建
 		
-		enableTable(tableName);
+		enableTable(tableName); 	//2、启用数据表触发器
 		String sql = null;
-		if(fullBuild){
+		if(fullBuild){				//3、创建触发器
 			sql = buildTriggerSql(tableName, NEW);
 			execSql(sql);
 			sql = buildTriggerSql(tableName, UPDATE);
@@ -53,7 +53,7 @@ public class TriggerGenerator {
 			sql = buildTriggerSql(tableName, DELETE);
 			execSql(sql);
 		}else{
-			sql = buildTriggerSql(tableName, type);
+			sql = buildTriggerSql(tableName, type); 
 			execSql(sql);
 		}
 		System.out.println("build Sussesful!");
