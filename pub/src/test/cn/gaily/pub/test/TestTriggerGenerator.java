@@ -4,7 +4,7 @@ import java.sql.Connection;
 
 import nc.bs.framework.test.AbstractTestCase;
 import cn.gaily.pub.trigger.SimpleDSMgr;
-import cn.gaily.pub.trigger.TriggerBaseTask;
+import cn.gaily.pub.trigger.ETLBaseTask;
 import cn.gaily.pub.trigger.TriggerGenerator;
 import cn.gaily.pub.util.JdbcUtils;
 
@@ -32,7 +32,7 @@ public class TestTriggerGenerator extends AbstractTestCase {
 			local.init();
 		}
 		
-		TriggerBaseTask task = new TriggerBaseTask();
+		ETLBaseTask task = new ETLBaseTask();
 		task.dealAdd(local, remote, "TEST");
 		long end = System.currentTimeMillis();
 		System.out.println(end-start);

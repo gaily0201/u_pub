@@ -28,9 +28,9 @@ import cn.gaily.pub.util.JdbcUtils;
  * @version 1.0
  * @since 2014-10-28
  */
-public class TriggerBaseTask {
+public class ETLBaseTask {
 
-	public int DSSIZE = 5;
+	private int DSSIZE = 5;
 	
 //	private SimpleDSMgr remote = new SimpleDSMgr();
 
@@ -39,12 +39,12 @@ public class TriggerBaseTask {
 	/**
 	 * 触发器管理表
 	 */
-	public String mgrTriggerTabName = "XFL_TABSTATUS";
+	private String mgrTriggerTabName = "XFL_TABSTATUS";
 	
 	/**
 	 * 临时表前缀
 	 */
-	public String tablePrefix = "XFL_";
+	private String tablePrefix = "XFL_";
 	
 	/**
 	 * 表名字段名map，key:表名大写,value:字段名,字段类型map
@@ -70,16 +70,16 @@ public class TriggerBaseTask {
 	
 	
 	
-	private TriggerBaseTask(){
+	private ETLBaseTask(){
 	}
 	
-	public TriggerBaseTask getInstance(){
+	public ETLBaseTask getInstance(){
 		synchronized (this) {
-			return new TriggerBaseTask();
+			return new ETLBaseTask();
 		}
 	}
 	
-	public void clear(){
+	private void clear(){
 		valueList.clear();
 		pkValues.clear();
 		colNameTypeMap.clear();
