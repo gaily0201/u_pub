@@ -16,6 +16,9 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.concurrent.ArrayBlockingQueue;
+
+import com.ufgov.ui.ma99.ma9907.copysystem.action.DoDeleteSysAction;
 
 import cn.gaily.pub.util.CommonUtil;
 import cn.gaily.pub.util.JdbcUtils;
@@ -30,6 +33,28 @@ import cn.gaily.pub.util.JdbcUtils;
  */
 public abstract class AbstractETLTask {
 
+	/**
+	 * 新增插入标识 1
+	 */
+	public final int NEW = 1;
+	/**
+	 * 更新标识 2
+	 */
+	public final int UPDATE = 2;
+	/**
+	 * 删除标识 3
+	 */
+	public final int DELETE = 3;
+	
+	/**
+	 * 启用
+	 */
+	public final int ENABLE = 1;
+	/**
+	 * 停用
+	 */
+	public final int DISABLE = 0;
+	
 	/**
 	 * 触发器管理表
 	 */
@@ -46,63 +71,115 @@ public abstract class AbstractETLTask {
 	public Map<String,Map<String,String>> tabColMap = new HashMap<String,Map<String,String>>();
 	
 	/**
-	 * 保存列值，Map<String,Object> key:列名, value:列值
+	 * 保存列值队列，Map<String,Object> key:列名, value:列值
 	 */
-	public List<Map<String,Object>> 	valueList 		= new ArrayList<Map<String,Object>>();
+	public ArrayBlockingQueue<Map<String,Object>> 	valueList 	= new ArrayBlockingQueue(500,true);
 	/**
 	 * 操作的pk值，以备回删数据
 	 */
 	public List<String> 			 	pkValues 		= new ArrayList<String>();
 	/**
+	 * 列名和类型对应关系（缓存起来）
+	 */
+	public Map<String,Map<String,String>> colNameTypeCache	= new HashMap<String,Map<String,String>>();
+	
+	/**
 	 * 列名和类型对应关系
 	 */
-	public Map<String,String> 		 	colNameTypeMap	= new HashMap<String,String>();
+	public Map<String,String> colNameTypeMap = new HashMap<String,String>();
+	
 	/**
 	 * 列和索引映射map,值插入设值
 	 */
-	public Map<String,Integer> 	 	 	colIndexMap 	= new HashMap<String,Integer>();
+	public Map<String,Integer> 	 colIndexMap 	= new HashMap<String,Integer>();
 	
 	
 	public void clear(){
 		valueList.clear();
-		pkValues.clear();
 		colNameTypeMap.clear();
+		pkValues.clear();
 		colIndexMap.clear();
 		
 	}
 	
 	/**
-	 * <p>方法名称：dealAdd</p>
-	 * <p>方法描述：处理新增数据</p>
-	 * @param tableName 表名
+	 * <p>方法名称：execute</p>
+	 * <p>方法描述：执行数据预置</p>
+	 * @param srcMgr
+	 * @param tarMgr
+	 * @param tableName
 	 * @author xiaoh
-	 * @since  2014-10-28
-	 * <p> history 2014-10-28 xiaoh  创建   <p>
+	 * @since  2014-10-29
+	 * <p> history 2014-10-29 xiaoh  创建   <p>
 	 */
-	public abstract void dealAdd(SimpleDSMgr srcMgr, SimpleDSMgr tarMgr, String tableName);
+	public String execute(SimpleDSMgr srcMgr, SimpleDSMgr tarMgr, String tableName){
+		if(srcMgr==null||tarMgr==null||CommonUtil.isEmpty(tableName)){
+			throw new RuntimeException("执行前数据预置参数出错");
+		}
+		
+		clear();
+		
+		String pkName = queryTempData(tableName, srcMgr);
+		
+		Map<String,Object> map = null;
+		String status = null;
+		AbstractETLTask task = null;
+		for(Iterator it= valueList.iterator();it.hasNext();){
+			map = (Map<String, Object>) valueList.poll();
+			if(map==null){
+				break;
+			}
+			status = (String) map.get("ETLSTATUS");
+			if(CommonUtil.isEmpty(status)){
+				continue;
+			}
+			
+			int type = Integer.valueOf(status);
+			switch(type){
+			case NEW:
+				task = ETLInsertTask.getInstance();
+				break;
+			case UPDATE:
+				task = ETLUpdateTask.getInstance();
+				break;
+			case DELETE:
+				task = ETLDeleteTask.getInstance();
+				break;
+			default:
+				throw new RuntimeException("出错");
+			}
+			
+			task.doexecute(srcMgr, tarMgr, tableName, pkName,  map, colNameTypeMap);
+		}
+		
+		delTempData(srcMgr, tableName, pkName);
+		
+		//统一事务
+//		for(int i=0;i<srcMgr.conns.size();i++){
+//			try {
+//				srcMgr.conns.get(i).commit();
+//				tarMgr.conns.get(i).commit();
+//			} catch (SQLException e) {
+//				e.printStackTrace();
+//			}
+//		}
+		
+		return pkName;
+	}
 	
 	/**
-	 * <p>方法名称：dealUpdate</p>
-	 * <p>方法描述：处理更新数据</p>
-	 * @param tableName 表名
+	 * <p>方法名称：doexecute</p>
+	 * <p>方法描述：执行DDL操作</p>
+	 * @param srcMgr		源连接池
+	 * @param tarMgr		目标连接池
+	 * @param tableName		表名
+	 * @param pkName		唯一标识名称
+	 * @param valueMap		值MAP
 	 * @author xiaoh
-	 * @since  2014-10-28
-	 * <p> history 2014-10-28 xiaoh  创建   <p>
+	 * @since  2014-10-29
+	 * <p> history 2014-10-29 xiaoh  创建   <p>
 	 */
-	public abstract void dealUpdate(SimpleDSMgr srcMgr, SimpleDSMgr tarMgr, String tableName);
-	
-	/**
-	 * <p>方法名称：dealDel</p>
-	 * <p>方法描述：处理删除数据</p>
-	 * @param tableName 表名
-	 * @author xiaoh
-	 * @since  2014-10-28
-	 * <p> history 2014-10-28 xiaoh  创建   <p>
-	 */
-	public abstract void dealDel(SimpleDSMgr srcMgr, SimpleDSMgr tarMgr, String tableName);
-
-	
-	
+	public abstract void doexecute(SimpleDSMgr srcMgr, SimpleDSMgr tarMgr, String tableName, String pkName, Map<String,Object> valueMap, Map<String,String> colNameTypeMap);
 	
 	/**
 	 * <p>方法名称：setValues</p>
@@ -117,7 +194,7 @@ public abstract class AbstractETLTask {
 	 * <p> history 2014-10-29 xiaoh  创建   <p>
 	 */
 	public PreparedStatement setValues(PreparedStatement ipst, String colName, String colType,Object value, List<String> ignoreCols) {
-		if(ignoreCols.contains(colName)){
+		if(ignoreCols!=null&&ignoreCols.contains(colName)){
 			return ipst;
 		}
 		try{
@@ -162,12 +239,11 @@ public abstract class AbstractETLTask {
 	 * @param srcMgr
 	 * @param tableName
 	 * @param pkName		主键字段名称
-	 * @param type			1、新增  2、修改  3、删除	
 	 * @author xiaoh
 	 * @since  2014-10-29
 	 * <p> history 2014-10-29 xiaoh  创建   <p>
 	 */
-	public void delTempData(SimpleDSMgr srcMgr, String tableName, String pkName, int type) {
+	public void delTempData(SimpleDSMgr srcMgr, String tableName, String pkName) {
 		if(srcMgr==null||CommonUtil.isEmpty(tableName)||CommonUtil.isEmpty(pkName)){
 			return ;
 		}
@@ -175,12 +251,6 @@ public abstract class AbstractETLTask {
 		Statement delSt = null;
 		StringBuilder delSb = new StringBuilder("DELETE FROM ");
 		delSb.append(tablePrefix).append(tableName);
-		delSb.append(" WHERE ").append(pkName).append(" IN(");
-		for(int i=0;i<pkValues.size();i++){
-			delSb.append("'").append(pkValues.get(i)).append("',");
-		}
-		delSb.deleteCharAt(delSb.length()-1);
-		delSb.append(") AND ETLSTATUS=").append(type);
 		try {
 			delSt = srcConn.createStatement();
 			delSt.execute(delSb.toString());
@@ -198,18 +268,21 @@ public abstract class AbstractETLTask {
 
 	/**
 	 * <p>方法名称：queryTempData</p>
-	 * <p>方法描述：查询数据，返回主键字段</p>
+	 * <p>方法描述：查询所有临时表中的数据</p>
 	 * @param tableName
 	 * @param srcMgr
-	 * @param type		1、新增  2、修改  3、删除
 	 * @return
 	 * @author xiaoh
 	 * @since  2014-10-29
 	 * <p> history 2014-10-29 xiaoh  创建   <p>
 	 */
-	public String queryTempData(String tableName,SimpleDSMgr srcMgr, int type) {
+	public String queryTempData(String tableName,SimpleDSMgr srcMgr) {
 		
-		if(CommonUtil.isEmpty(tableName)||srcMgr==null||(type!=1&&type!=2&&type!=3)){
+		colNameTypeMap = colNameTypeCache.get(tableName);
+		if(colNameTypeMap==null||colNameTypeMap.isEmpty()){
+			colNameTypeMap = getTabCols(srcMgr, tableName);
+		}
+		if(CommonUtil.isEmpty(tableName)||srcMgr==null){
 			return null;
 		}
 		Map<String, Object> valueMap = null;
@@ -223,7 +296,7 @@ public abstract class AbstractETLTask {
 		}
 		querySrcSb.deleteCharAt(querySrcSb.length()-1);
 		querySrcSb.append(" FROM ").append(tablePrefix).append(tableName);
-		querySrcSb.append(" WHERE ETLSTATUS=").append(type);
+//		querySrcSb.append(" WHERE ETLSTATUS=").append(type);
 		querySrcSb.append(" ORDER BY ETLTS ASC");
 		
 		Statement st = null;
@@ -238,16 +311,21 @@ public abstract class AbstractETLTask {
 					colName = ((Entry<String,String>)it.next()).getKey();
 					valueMap.put(colName,rs.getString(colName));
 				}
-				valueList.add(valueMap);
+				valueList.put(valueMap);
 			}
 			//获取pk值
-			for(int i=0;i<valueList.size();i++){
-				pkName = (String) valueList.get(i).get("ETLPKNAME");
-				pkValues.add((String) valueList.get(i).get(pkName));
+			Map<String,String> map = null;
+			for(Iterator it= valueList.iterator();it.hasNext();){
+				map = (Map<String,String>)it.next();
+				pkName = (String)map.get("ETLPKNAME");
+				pkValues.add(map.get(pkName));
 			}
 		} catch (SQLException e) {
 			e.printStackTrace();
 			throw new RuntimeException("查询数据出错"+e);
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+			throw new RuntimeException("设置列值出错"+e);
 		} finally{
 			JdbcUtils.release(null, st, rs);
 			srcMgr.release(srcConn);
@@ -261,13 +339,12 @@ public abstract class AbstractETLTask {
 	 * <p>方法描述：获取表的所有列</p>
 	 * @param mgr		    连接
 	 * @param tableName	    表名
-	 * @param needRelease 是否需要释放连接
 	 * @return Map<String,String>  key:字段名, value:字段数据库类型
 	 * @author xiaoh
 	 * @since  2014-10-28
 	 * <p> history 2014-10-28 xiaoh  创建   <p>
 	 */
-	public Map<String,String> getTabCols(SimpleDSMgr mgr, String tableName, boolean needRelease){
+	public Map<String,String> getTabCols(SimpleDSMgr mgr, String tableName){
 		
 		if(mgr==null||CommonUtil.isEmpty(tableName)){
 			throw new RuntimeException("获取表列参数出错");
@@ -332,7 +409,7 @@ public abstract class AbstractETLTask {
 			pst = conn.prepareStatement(sql);
 			pst.setString(1, String.valueOf(type));
 			pst.setString(2, tableName.toUpperCase().trim());
-			pst.executeUpdate();
+			pst.execute();
 		} catch (SQLException e) {
 			e.printStackTrace();
 			throw new RuntimeException("停用启用触发器出错"+e);

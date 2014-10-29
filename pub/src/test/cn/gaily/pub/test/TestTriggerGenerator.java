@@ -1,9 +1,8 @@
 package cn.gaily.pub.test;
 
 import java.sql.Connection;
-
 import nc.bs.framework.test.AbstractTestCase;
-import cn.gaily.pub.trigger.ETLTaskFactory;
+import cn.gaily.pub.trigger.DefaultETLTask;
 import cn.gaily.pub.trigger.SimpleDSMgr;
 import cn.gaily.pub.trigger.AbstractETLTask;
 import cn.gaily.pub.trigger.TriggerGenerator;
@@ -33,8 +32,8 @@ public class TestTriggerGenerator extends AbstractTestCase {
 			local.init();
 		}
 		
-		AbstractETLTask task = ETLTaskFactory.createInsertTask();
-		task.dealAdd(local, remote, "TEST");
+		AbstractETLTask task = DefaultETLTask.getInstance();
+		task.execute(local, remote, "TEST");
 		long end = System.currentTimeMillis();
 		System.out.println(end-start);
 	}

@@ -1,6 +1,7 @@
 package cn.gaily.pub.trigger;
 
 import java.sql.Connection;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -81,6 +82,12 @@ public class SimpleDSMgr{
 		}
 		for(int i=0;i<initSize;i++){
 			conns.add(JdbcUtils.getConnection(userName, password, ip, dbName, port));
+//			try {
+//				conn.setAutoCommit(false);
+//			} catch (SQLException e) {
+//				e.printStackTrace();
+//				throw new RuntimeException("设置手动提交失败");
+//			}
 		}
 	}
 	
