@@ -8,7 +8,7 @@ import cn.gaily.pub.util.JdbcUtils;
 
 /**
  * <p>Title: SimpleDSMgr</P>
- * <p>Description: 简答的数据源管理器</p>
+ * <p>Description: 简单的数据源管理器</p>
  * <p>Copyright: 用友政务软件有限公司 Copyright (c) 2014</p>
  * @author xiaoh
  * @version 1.0
