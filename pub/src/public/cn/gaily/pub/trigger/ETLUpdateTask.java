@@ -23,6 +23,8 @@ public class ETLUpdateTask extends AbstractETLTask{
 	
 	public static ETLUpdateTask instance = null;
 	
+	public PreparedStatement ipst = null;
+	
 	private ETLUpdateTask(){}
 	
 	public static ETLUpdateTask getInstance(){
@@ -39,15 +41,27 @@ public class ETLUpdateTask extends AbstractETLTask{
 		}
 
 		//1、停用目标库触发器
-		enableTrigger(tarMgr, tableName, DISABLE);
+//		enableTrigger(tarMgr, tableName, DISABLE);
 		
 		//2、执行目标库数据库更新
 		doUpdate(tarMgr, tableName,pkName, valueMap, colNameTypeMap);
 		
 		//4、启用目标库触发器
-		enableTrigger(tarMgr, tableName, ENABLE);
+//		enableTrigger(tarMgr, tableName, ENABLE);
 	}
 
+	/**
+	 * <p>方法名称：doUpdate</p>
+	 * <p>方法描述：</p>
+	 * @param tarMgr
+	 * @param tableName
+	 * @param pkName
+	 * @param valueMap
+	 * @param colNameTypeMap
+	 * @author xiaoh
+	 * @since  2014-10-29
+	 * <p> history 2014-10-29 xiaoh  创建   <p>
+	 */
 	private void doUpdate(SimpleDSMgr tarMgr, String tableName, String pkName, Map<String, Object> valueMap, Map<String, String> colNameTypeMap) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("UPDATE ").append(tableName).append(" SET ");
@@ -69,12 +83,15 @@ public class ETLUpdateTask extends AbstractETLTask{
 		if(CommonUtil.isEmpty(pkValue)){
 			throw new RuntimeException("更新数据未获取到主键");
 		}
-		sb.append(" WHERE ").append(pkName).append("=").append(pkValue);
+		sb.append(" WHERE ").append(pkName).append("='").append(pkValue).append("'");
 		
 		Connection targetConn = tarMgr.getConnection();
-		PreparedStatement ipst = null;
 		try {
-			ipst = targetConn.prepareStatement(sb.toString());
+			if(ipst==null){
+				ipst = targetConn.prepareStatement(sb.toString());
+			}
+			ipst.clearParameters();
+			
 			for(Iterator it=colNameTypeMap.entrySet().iterator();it.hasNext();){
 				entry = (Entry<String, String>) it.next();
 				colName = entry.getKey();

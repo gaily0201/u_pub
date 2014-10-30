@@ -25,6 +25,9 @@ public class ETLInsertTask extends AbstractETLTask{
 	
 	public static ETLInsertTask instance = null;
 	
+	
+	public PreparedStatement pst = null;
+	
 	private ETLInsertTask(){}
 	
 	public static ETLInsertTask getInstance(){
@@ -50,13 +53,13 @@ public class ETLInsertTask extends AbstractETLTask{
 		}
 
 		//1、停用目标库触发器
-		enableTrigger(tarMgr, tableName, DISABLE);
+//		enableTrigger(tarMgr, tableName, DISABLE);
 		
 		//2、执行目标库数据库插入
 		doAddInsert(tarMgr, tableName, valueMap, colNameTypeMap);
 		
 		//3、启用目标库触发器
-		enableTrigger(tarMgr, tableName, ENABLE);
+//		enableTrigger(tarMgr, tableName, ENABLE);
 	}
 	
 	/**
@@ -97,23 +100,26 @@ public class ETLInsertTask extends AbstractETLTask{
 		String insertSql = tarSb.toString();
 		
 		Connection targetConn = tarMgr.getConnection();
-		PreparedStatement ipst = null;
 		try {
-			ipst = targetConn.prepareStatement(insertSql);
+			if(pst==null){
+				pst = targetConn.prepareStatement(insertSql);
+			}
+			pst.clearParameters();
+			
 			for(Iterator it=colNameTypeMap.entrySet().iterator();it.hasNext();){
 				entry = (Entry<String, String>) it.next();
 				colName = entry.getKey();
 				colType = entry.getValue();
 				Object value = valueMap.get(colName);
 				List<String> ignoreCols = Arrays.asList(new String[]{"ETLSTATUS","ETLPKNAME","ETLTS"});
-				ipst =setValues(ipst, colName, colType, value, ignoreCols);  //设置列值
+				pst =setValues(pst, colName, colType, value, ignoreCols);  //设置列值
 			}
-			ipst.execute();
+			pst.execute();
 		} catch (SQLException e) {
 			e.printStackTrace();
 			throw new RuntimeException("插入数据库异常");
 		}finally{
-			JdbcUtils.release(null, ipst, null);
+			JdbcUtils.release(null, pst, null);
 			tarMgr.release(targetConn);
 		}
 	}

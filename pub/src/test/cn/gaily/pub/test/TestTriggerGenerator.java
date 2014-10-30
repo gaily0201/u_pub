@@ -33,17 +33,17 @@ public class TestTriggerGenerator extends AbstractTestCase {
 		}
 		
 		AbstractETLTask task = DefaultETLTask.getInstance();
-		task.execute(local, remote, "TEST");
+		task.execute(local, remote, "CRPAS_BAOBU_B");
 		long end = System.currentTimeMillis();
 		System.out.println(end-start);
 	}
 	
 	
 	public static void createTrigger(){
-		Connection conn = JdbcUtils.getConnection("uap63_TEST", "1", "192.168.1.100", "orcl", "1521");
+		Connection conn = JdbcUtils.getConnection("uap63_test", "1", "192.168.1.100", "orcl", "1521");
 		TriggerGenerator generator = new TriggerGenerator();
 		generator.setconn(conn);
-		generator.generate("TEST", null, true);
+		generator.generate("CRPAS_BAOBU_h", null, true);
 	}
 	
 }

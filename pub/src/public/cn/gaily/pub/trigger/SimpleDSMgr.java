@@ -80,8 +80,10 @@ public class SimpleDSMgr{
 		if(conns.isEmpty()&&initSize==0){
 			initSize = defaultSize;
 		}
+		Connection conn = null;
 		for(int i=0;i<initSize;i++){
-			conns.add(JdbcUtils.getConnection(userName, password, ip, dbName, port));
+			conn = JdbcUtils.getConnection(userName, password, ip, dbName, port);
+			conns.add(conn);
 //			try {
 //				conn.setAutoCommit(false);
 //			} catch (SQLException e) {

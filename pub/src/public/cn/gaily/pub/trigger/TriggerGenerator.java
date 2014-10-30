@@ -107,15 +107,14 @@ public class TriggerGenerator {
 			pst = conn.prepareStatement(sql);
 			pst.setString(1, "XFL_"+tableName.toUpperCase().trim());
 			rs = pst.executeQuery();
+			st = conn.createStatement();
 			if(rs.next()&&"1".equals(rs.getString(1))){
-				return true;
-			}else{
-				st = conn.createStatement();
-				st.executeUpdate("CREATE TABLE XFL_"+tableName+" AS SELECT * FROM "+tableName+" WHERE 1=0");
-				st.executeUpdate("ALTER TABLE XFL_"+tableName+" ADD ETLSTATUS CHAR(1)");
-				st.executeUpdate("ALTER TABLE XFL_"+tableName+" ADD ETLPKNAME VARCHAR2(50)");
-				st.executeUpdate("ALTER TABLE XFL_"+tableName+" ADD ETLTS VARCHAR2(100)");
+				st.executeUpdate("DROP TABLE XFL_"+tableName.toUpperCase().trim());
 			}
+			st.executeUpdate("CREATE TABLE XFL_"+tableName+" AS SELECT * FROM "+tableName+" WHERE 1=0");
+			st.executeUpdate("ALTER TABLE XFL_"+tableName+" ADD ETLSTATUS CHAR(1)");
+			st.executeUpdate("ALTER TABLE XFL_"+tableName+" ADD ETLPKNAME VARCHAR2(50)");
+			st.executeUpdate("ALTER TABLE XFL_"+tableName+" ADD ETLTS VARCHAR2(100)");
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}finally{
@@ -176,7 +175,7 @@ public class TriggerGenerator {
 			throw new RuntimeException("传入的类型无效无效");
 		}
 		tableName = tableName.toUpperCase();
-		StringBuilder sb  = new StringBuilder("CREATE OR REPLACE TRIGGER ");
+		StringBuilder sb  = new StringBuilder("CREATE OR REPLACE TRIGGER XFL_");
 		sb.append(tableName).append("_").append(type).append(" ");
 		switch(type){
 			case NEW: 
@@ -190,13 +189,13 @@ public class TriggerGenerator {
 				break;
 		}
 		sb.append(tableName).append(" FOR EACH ROW DECLARE ACTION NUMBER; PKNAME VARCHAR2(50);");
-		sb.append("BEGIN SELECT STATUS INTO ACTION  FROM XFL_TABSTATUS WHERE TABLENAME='");
-		sb.append(tableName).append("';");  //status
+		sb.append("BEGIN  SELECT STATUS INTO ACTION  FROM XFL_TABSTATUS WHERE TABLENAME='");
+		sb.append(tableName).append("'; IF(ACTION=1) THEN ");  //status
 		sb.append(" SELECT A.COLUMN_NAME INTO PKNAME FROM USER_CONS_COLUMNS A, USER_CONSTRAINTS B");
 		sb.append(" WHERE A.CONSTRAINT_NAME = B.CONSTRAINT_NAME");
 		sb.append(" AND B.CONSTRAINT_TYPE = 'P'  AND A.TABLE_NAME ='");
 		sb.append(tableName).append("';"); //pkname
-		sb.append("IF(ACTION=1) THEN INSERT INTO XFL_").append(tableName);
+		sb.append(" INSERT INTO XFL_").append(tableName);
 		Map<Integer,String> map = getTableCols(tableName, 1);
 		sb.append(map.get(1));
 		sb.append("ETLSTATUS, ETLPKNAME, ETLTS) VALUES "); //--ETLSTATUS 数据状态

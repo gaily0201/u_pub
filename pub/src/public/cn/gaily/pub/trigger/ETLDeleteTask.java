@@ -25,6 +25,8 @@ public class ETLDeleteTask extends AbstractETLTask{
 	
 	public static ETLDeleteTask instance = null;
 	
+	public PreparedStatement pst = null;
+	
 	private ETLDeleteTask(){}
 	
 	public static ETLDeleteTask getInstance(){
@@ -38,7 +40,7 @@ public class ETLDeleteTask extends AbstractETLTask{
 	public void doexecute(SimpleDSMgr srcMgr, SimpleDSMgr tarMgr, String tableName,String pkName, Map<String,Object> valueMap, Map<String,String> colNameTypeMap) {
 		
 		//1.停用目标数据源触发器
-		enableTrigger(tarMgr, tableName, DISABLE);
+//		enableTrigger(tarMgr, tableName, DISABLE);
 		
 		String pkValue = (String) valueMap.get(pkName); //TODO pkvalue可能是int
 		if(CommonUtil.isEmpty(pkValue)){
@@ -48,7 +50,7 @@ public class ETLDeleteTask extends AbstractETLTask{
 		doDelete(tarMgr, tableName, pkName, pkValue, colNameTypeMap);
 		
 		//3.启用目标数据源触发器
-		enableTrigger(tarMgr, tableName, ENABLE);
+//		enableTrigger(tarMgr, tableName, ENABLE);
 		
 	}
 
@@ -70,13 +72,16 @@ public class ETLDeleteTask extends AbstractETLTask{
 		}
 		
 		Connection srcConn = tarMgr.getConnection();
-		PreparedStatement pst = null;
 		StringBuilder delSb = new StringBuilder("DELETE FROM ");
 		delSb.append(tableName);
 		delSb.append(" WHERE ").append(pkName).append("=?");
 		colIndexMap.put(pkName, 1);
 		try {
-			pst = srcConn.prepareStatement(delSb.toString());
+			if(pst==null){
+				pst = srcConn.prepareStatement(delSb.toString());
+			}
+			pst.clearParameters();
+			
 			String colType =colNameTypeMap.get(pkName);
 			if(CommonUtil.isEmpty(colType)){
 				throw new RuntimeException("获取主键字段类型出错");
