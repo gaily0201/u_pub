@@ -71,36 +71,27 @@ public class VOUtil {
 	        SuperVO oldVO = (SuperVO) obj;
 	        SuperVO newVO = MDPersistenceService.lookupPersistenceQueryService().queryBillOfVOByPK(oldVO.getClass(),
 	                oldVO.getPrimaryKey(), false);
-	        // 单据被删除之后应该回到列表界面再刷新
 	        if (newVO == null) {
-	          // 数据已经被删除
-	          throw new BusinessException(NCLangRes.getInstance().getStrByID(
-	              "uif2", "RefreshSingleAction-000000")/*数据已经被删除，请返回列表界面！*/);
+	          throw new BusinessException(NCLangRes.getInstance().getStrByID("uif2", "RefreshSingleAction-000000"));
 	        }
 	        model.directlyUpdate(newVO);
 	      }
 	      else if (obj instanceof AbstractBill) {
 	        AbstractBill oldVO = (AbstractBill) obj;
 	        String pk = oldVO.getParentVO().getPrimaryKey();
-	        IBillQueryService billQuery =
-	            NCLocator.getInstance().lookup(IBillQueryService.class);
-	        AggregatedValueObject newVO =
-	            billQuery.querySingleBillByPk(oldVO.getClass(), pk);
-	        // 单据被删除之后应该回到列表界面再刷新
+	        IBillQueryService billQuery = NCLocator.getInstance().lookup(IBillQueryService.class);
+	        AggregatedValueObject newVO = billQuery.querySingleBillByPk(oldVO.getClass(), pk);
 	        if (newVO == null) {
-	          // 数据已经被删除
 	          throw new BusinessException(NCLangRes.getInstance().getStrByID(
-	              "uif2", "RefreshSingleAction-000000")/*数据已经被删除，请返回列表界面！*/);
+	              "uif2", "RefreshSingleAction-000000"));
 	        }
 	        model.directlyUpdate(newVO);
 	      }
 	      else {
-	        Logger.debug("目前只支持SuperVO结构的数据");/*-=notranslate=-*/
+	        Logger.debug("目前只支持SuperVO结构的数据");
 	      }
 	    }
 	    
-	    ShowStatusBarMsgUtil.showStatusBarMsg(
-	            nc.vo.ml.NCLangRes4VoTransl.getNCLangRes().getStrByID("pubapp_0",
-	                "0pubapp-0267")/*@res "当前单据刷新成功。"*/, model.getContext());
+	    ShowStatusBarMsgUtil.showStatusBarMsg(nc.vo.ml.NCLangRes4VoTransl.getNCLangRes().getStrByID("pubapp_0", "0pubapp-0267"), model.getContext());
 	}
 }
