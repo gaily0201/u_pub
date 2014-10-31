@@ -21,7 +21,8 @@ import java.util.concurrent.ArrayBlockingQueue;
 import com.ufgov.ui.ma99.ma9907.copysystem.action.DoDeleteSysAction;
 
 import cn.gaily.pub.util.CommonUtil;
-import cn.gaily.pub.util.JdbcUtils;
+import cn.gaily.simplejdbc.SimpleJdbc;
+import cn.gaily.simplejdbc.SimpleDSMgr;
 
 /**
  * <p>Title: TriggerBaseTask</P>
@@ -287,7 +288,7 @@ public abstract class AbstractETLTask {
 			e.printStackTrace();
 			throw new RuntimeException("删除数据出错");
 		}finally{
-			JdbcUtils.release(null, delSt, null);
+			SimpleJdbc.release(null, delSt, null);
 			srcMgr.release(srcConn);
 		}
 	}
@@ -361,7 +362,7 @@ public abstract class AbstractETLTask {
 			e.printStackTrace();
 			throw new RuntimeException("设置列值出错"+e);
 		} finally{
-			JdbcUtils.release(null, st, rs);
+			SimpleJdbc.release(null, st, rs);
 			srcMgr.release(srcConn);
 		}
 		return pkName;
@@ -412,7 +413,7 @@ public abstract class AbstractETLTask {
 		} catch (SQLException e) {
 			e.printStackTrace();
 		} finally{
-			JdbcUtils.release(null, pst, rs);
+			SimpleJdbc.release(null, pst, rs);
 			mgr.release(conn);
 		}
 		tabColMap.put(tableName, result);
@@ -452,7 +453,7 @@ public abstract class AbstractETLTask {
 			e.printStackTrace();
 			throw new RuntimeException("停用启用触发器出错"+e);
 		}finally{
-			JdbcUtils.release(null, st, null);
+			SimpleJdbc.release(null, st, null);
 			mgr.release(conn);
 		}
 		

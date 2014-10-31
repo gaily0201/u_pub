@@ -1,4 +1,4 @@
-package cn.gaily.pub.util;
+package cn.gaily.simplejdbc;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -14,7 +14,7 @@ import java.sql.Statement;
  * @version 1.0
  * @since 2014-8-6
  */
-public class JdbcUtils{
+public class SimpleJdbc{
 
 	private static ResultSet  		rs 		= null;
 	private static Connection 		conn 	= null;
@@ -25,7 +25,7 @@ public class JdbcUtils{
 //	private static String 		USERNAME 	= "szgjf";
 	private static String 		DEFAULT_PASSWORD 	= "1";
 	
-	public JdbcUtils(String username, String password){
+	public SimpleJdbc(String username, String password){
 		this.DEFAULT_USERNAME = username;
 		this.DEFAULT_PASSWORD = password;
 	}
@@ -39,7 +39,7 @@ public class JdbcUtils{
 		}
 	}
 	
-	public JdbcUtils(Connection conn, Statement st, ResultSet rs){
+	public SimpleJdbc(Connection conn, Statement st, ResultSet rs){
 		this.conn = conn;
 		this.st = st;
 		this.rs = rs;

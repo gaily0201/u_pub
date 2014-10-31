@@ -2,6 +2,8 @@ package cn.gaily.pub.trigger;
 
 import java.util.Map;
 
+import cn.gaily.simplejdbc.SimpleDSMgr;
+
 /**
  * <p>Title: DefaultETLTask</P>
  * <p>Description: 默认的任务实现</p>

@@ -1,7 +1,17 @@
 package cn.gaily.pub.util;
 
+import nc.bs.framework.common.NCLocator;
+import nc.bs.logging.Logger;
+import nc.itf.pubapp.pub.smart.IBillQueryService;
+import nc.md.persist.framework.MDPersistenceService;
+import nc.ui.ml.NCLangRes;
+import nc.ui.uif2.ShowStatusBarMsgUtil;
+import nc.ui.uif2.model.AbstractAppModel;
+import nc.vo.pub.AggregatedValueObject;
+import nc.vo.pub.BusinessException;
 import nc.vo.pub.IAttributeMeta;
 import nc.vo.pub.SuperVO;
+import nc.vo.pubapp.pattern.model.entity.bill.AbstractBill;
 
 /**
  * <p>Title: VOUtil</P>
@@ -45,4 +55,52 @@ public class VOUtil {
 		}
 	}
 	
+	/**
+	 * <p>方法名称：refresh</p>
+	 * <p>方法描述：刷新单据</p>
+	 * @param model
+	 * @throws Exception
+	 * @author xiaoh
+	 * @since  2014-10-31
+	 * <p> history 2014-10-31 xiaoh  创建   <p>
+	 */
+	public static void refresh(AbstractAppModel model) throws Exception{
+		Object obj = model.getSelectedData();
+	    if (obj != null) {
+	      if (obj instanceof SuperVO) {
+	        SuperVO oldVO = (SuperVO) obj;
+	        SuperVO newVO = MDPersistenceService.lookupPersistenceQueryService().queryBillOfVOByPK(oldVO.getClass(),
+	                oldVO.getPrimaryKey(), false);
+	        // 单据被删除之后应该回到列表界面再刷新
+	        if (newVO == null) {
+	          // 数据已经被删除
+	          throw new BusinessException(NCLangRes.getInstance().getStrByID(
+	              "uif2", "RefreshSingleAction-000000")/*数据已经被删除，请返回列表界面！*/);
+	        }
+	        model.directlyUpdate(newVO);
+	      }
+	      else if (obj instanceof AbstractBill) {
+	        AbstractBill oldVO = (AbstractBill) obj;
+	        String pk = oldVO.getParentVO().getPrimaryKey();
+	        IBillQueryService billQuery =
+	            NCLocator.getInstance().lookup(IBillQueryService.class);
+	        AggregatedValueObject newVO =
+	            billQuery.querySingleBillByPk(oldVO.getClass(), pk);
+	        // 单据被删除之后应该回到列表界面再刷新
+	        if (newVO == null) {
+	          // 数据已经被删除
+	          throw new BusinessException(NCLangRes.getInstance().getStrByID(
+	              "uif2", "RefreshSingleAction-000000")/*数据已经被删除，请返回列表界面！*/);
+	        }
+	        model.directlyUpdate(newVO);
+	      }
+	      else {
+	        Logger.debug("目前只支持SuperVO结构的数据");/*-=notranslate=-*/
+	      }
+	    }
+	    
+	    ShowStatusBarMsgUtil.showStatusBarMsg(
+	            nc.vo.ml.NCLangRes4VoTransl.getNCLangRes().getStrByID("pubapp_0",
+	                "0pubapp-0267")/*@res "当前单据刷新成功。"*/, model.getContext());
+	}
 }

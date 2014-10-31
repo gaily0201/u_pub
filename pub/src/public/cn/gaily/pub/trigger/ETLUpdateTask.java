@@ -8,7 +8,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import cn.gaily.pub.util.CommonUtil;
-import cn.gaily.pub.util.JdbcUtils;
+import cn.gaily.simplejdbc.SimpleJdbc;
+import cn.gaily.simplejdbc.SimpleDSMgr;
 
 /**
  * <p>Title: ETLUpdateTask</P>
@@ -105,7 +106,7 @@ public class ETLUpdateTask extends AbstractETLTask{
 			e.printStackTrace();
 			throw new RuntimeException("更新数据库异常");
 		}finally{
-			JdbcUtils.release(null, ipst, null);
+			SimpleJdbc.release(null, ipst, null);
 			tarMgr.release(targetConn);
 		}
 	}

@@ -30,6 +30,8 @@ import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.SimpleFSDirectory;
 import org.apache.lucene.util.Version;
 
+import cn.gaily.simplejdbc.SimpleJdbc;
+
 
 /**
  * <p>Title: FieldUpdater</P>
@@ -285,7 +287,7 @@ public class FieldUpdater {
 			if(writer!=null){
 				writer.close();
 			}
-			JdbcUtils.release(null, null, rs);
+			SimpleJdbc.release(null, null, rs);
 		}
 	}
 
@@ -322,7 +324,7 @@ public class FieldUpdater {
 	 */
 	private static ResultSet getResultSet(String[] fields, String tableName, String wherePart, DataSourceInfo ds){
 		StringBuilder sql = new StringBuilder("SELECT ");
-		conn = JdbcUtils.getConnection(ds.getnUserName(), ds.getnPassword(),ds.getnIp(), ds.getnName());
+		conn = SimpleJdbc.getConnection(ds.getnUserName(), ds.getnPassword(),ds.getnIp(), ds.getnName());
 		//validFileds
 		if(fields!=null && fields.length>0 && CommonUtil.isNotEmpty(tableName)){
 			getColList(conn, tableName);
@@ -350,7 +352,7 @@ public class FieldUpdater {
 		} catch (SQLException e) {
 			e.printStackTrace();
 		} finally{
-			JdbcUtils.release(conn, st, null);
+			SimpleJdbc.release(conn, st, null);
 		}
 		return rs;
 	}
@@ -367,7 +369,7 @@ public class FieldUpdater {
 	 */
 	private static ResultSet getResultSet(String[] fields, String tableName, String wherePart){
 		StringBuilder sql = new StringBuilder("SELECT ");
-		conn = JdbcUtils.getConnection(DB_USERNAME, DB_PASSWORD);
+		conn = SimpleJdbc.getConnection(DB_USERNAME, DB_PASSWORD);
 		//validFileds
 		if(fields!=null && fields.length>0 && CommonUtil.isNotEmpty(tableName)){
 			getColList(conn, tableName);
@@ -395,7 +397,7 @@ public class FieldUpdater {
 		} catch (SQLException e) {
 			e.printStackTrace();
 		} finally{
-			JdbcUtils.release(conn, st, null);
+			SimpleJdbc.release(conn, st, null);
 		}
 		return rs;
 	}
@@ -421,7 +423,7 @@ public class FieldUpdater {
 				e.printStackTrace();
 			} finally{
 				rs = null;
-				JdbcUtils.release(null, pst, rs);
+				SimpleJdbc.release(null, pst, rs);
 			}
 
 		}

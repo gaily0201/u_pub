@@ -13,6 +13,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import cn.gaily.simplejdbc.SimpleJdbc;
+
 /**
  * <p>Title: PubFieldUpdater</P>
  * <p>Description: 通用的字段更新类, 用于模糊匹配字段值, 更新数据</p>
@@ -102,7 +104,7 @@ public class PubFieldUpdater {
 		sb.append(" SET ").append(updateField).append("=? WHERE ").append(pkField).append("=?");
 		String sql = sb.toString();
 		
-		conn = JdbcUtils.getConnection(ds.getnUserName(), ds.getnPassword(),ds.getnIp(),ds.getnName());
+		conn = SimpleJdbc.getConnection(ds.getnUserName(), ds.getnPassword(),ds.getnIp(),ds.getnName());
 		try {
 			conn.setAutoCommit(false);
 			pst = conn.prepareStatement(sql);
@@ -132,7 +134,7 @@ public class PubFieldUpdater {
 		} catch (SQLException e) {
 			e.printStackTrace();
 		} finally{
-			JdbcUtils.release(conn, pst, rs);
+			SimpleJdbc.release(conn, pst, rs);
 		}
 		
 		return true;
@@ -175,7 +177,7 @@ public class PubFieldUpdater {
 		if(CommonUtil.isEmpty(tableName)||fields==null||fields.length<=0){
 			return null;
 		}
-		conn = JdbcUtils.getConnection(ds.getnUserName(), ds.getnPassword(),ds.getnIp(),ds.getnName());
+		conn = SimpleJdbc.getConnection(ds.getnUserName(), ds.getnPassword(),ds.getnIp(),ds.getnName());
 		buildQuerySql(tableName, fields, wherePart);
 		try {
 			if(CommonUtil.isEmpty(querySql)){
@@ -196,7 +198,7 @@ public class PubFieldUpdater {
 		} catch (SQLException e) {
 			e.printStackTrace();
 		} finally{
-			JdbcUtils.release(conn, st, rs);
+			SimpleJdbc.release(conn, st, rs);
 		}
 		
 		return queryMap;
@@ -243,7 +245,7 @@ public class PubFieldUpdater {
 				e.printStackTrace();
 			} finally{
 				rs = null;
-				JdbcUtils.release(null, pst, rs);
+				SimpleJdbc.release(null, pst, rs);
 			}
 			
 		}

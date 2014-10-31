@@ -8,7 +8,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import cn.gaily.pub.util.CommonUtil;
-import cn.gaily.pub.util.JdbcUtils;
+import cn.gaily.simplejdbc.SimpleJdbc;
 
 /**
  * <p>Title: TriggerGenerator</P>
@@ -79,7 +79,7 @@ public class TriggerGenerator {
 			e.printStackTrace();
 			throw new RuntimeException("执行创建触发器出错: "+e);
 		}finally{
-			JdbcUtils.release(conn, st, null);
+			SimpleJdbc.release(conn, st, null);
 		}
 	}
 	
@@ -118,7 +118,7 @@ public class TriggerGenerator {
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}finally{
-			JdbcUtils.release(null, pst, rs);
+			SimpleJdbc.release(null, pst, rs);
 		}
 		
 		
@@ -156,7 +156,7 @@ public class TriggerGenerator {
 		} catch (SQLException e) {
 			e.printStackTrace();
 		} finally{
-			JdbcUtils.release(null, st, null);
+			SimpleJdbc.release(null, st, null);
 		}
 	}
 	
@@ -255,7 +255,7 @@ public class TriggerGenerator {
 			e.printStackTrace();
 			throw new RuntimeException("查询数据出错:"+e);
 		}finally{
-			JdbcUtils.release(null, pst, rs);
+			SimpleJdbc.release(null, pst, rs);
 		}
 		return map;
 	}

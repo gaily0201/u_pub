@@ -16,6 +16,8 @@ import java.util.Collection;
 import nc.bs.logging.Logger;
 import org.apache.commons.io.FileUtils;
 
+import cn.gaily.simplejdbc.SimpleJdbc;
+
 public class FileUtil {
 
 	static Connection conn = null;
@@ -44,7 +46,7 @@ public class FileUtil {
 			path.mkdirs();
 		}
 		if(conn==null){
-			conn = JdbcUtils.getConnection("szgjf", "1", "192.168.1.100", "orcl");
+			conn = SimpleJdbc.getConnection("szgjf", "1", "192.168.1.100", "orcl");
 		}
 		try {
 			pst = conn.prepareStatement(sql);

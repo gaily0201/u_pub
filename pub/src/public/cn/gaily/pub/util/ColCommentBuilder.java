@@ -5,6 +5,8 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 
+import cn.gaily.simplejdbc.SimpleJdbc;
+
 
 
 /**
@@ -27,7 +29,7 @@ public class ColCommentBuilder {
 	 * <p> history 2014-8-6 xiaoh  ´´½¨   <p>
 	 */
 	public static void build(String tableName) throws SQLException{
-		Connection conn = JdbcUtils.getDefaultConnection();
+		Connection conn = SimpleJdbc.getDefaultConnection();
 		Statement st = conn.createStatement();
 		String sql  = "SELECT COLUMN_NAME,COMMENTS FROM USER_COL_COMMENTS WHERE TABLE_NAME='"+tableName.toUpperCase()+"'";
 		

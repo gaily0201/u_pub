@@ -1,11 +1,10 @@
-package cn.gaily.pub.trigger;
+package cn.gaily.simplejdbc;
 
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
-import cn.gaily.pub.util.JdbcUtils;
 
 /**
  * <p>Title: SimpleDSMgr</P>
@@ -82,7 +81,7 @@ public class SimpleDSMgr{
 		}
 		Connection conn = null;
 		for(int i=0;i<initSize;i++){
-			conn = JdbcUtils.getConnection(userName, password, ip, dbName, port);
+			conn = SimpleJdbc.getConnection(userName, password, ip, dbName, port);
 			conns.add(conn);
 //			try {
 //				conn.setAutoCommit(false);

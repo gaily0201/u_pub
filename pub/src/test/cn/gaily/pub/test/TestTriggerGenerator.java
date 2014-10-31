@@ -3,10 +3,10 @@ package cn.gaily.pub.test;
 import java.sql.Connection;
 import nc.bs.framework.test.AbstractTestCase;
 import cn.gaily.pub.trigger.DefaultETLTask;
-import cn.gaily.pub.trigger.SimpleDSMgr;
 import cn.gaily.pub.trigger.AbstractETLTask;
 import cn.gaily.pub.trigger.TriggerGenerator;
-import cn.gaily.pub.util.JdbcUtils;
+import cn.gaily.simplejdbc.SimpleJdbc;
+import cn.gaily.simplejdbc.SimpleDSMgr;
 
 public class TestTriggerGenerator extends AbstractTestCase {
 
@@ -40,7 +40,7 @@ public class TestTriggerGenerator extends AbstractTestCase {
 	
 	
 	public static void createTrigger(){
-		Connection conn = JdbcUtils.getConnection("uap63_test", "1", "192.168.1.100", "orcl", "1521");
+		Connection conn = SimpleJdbc.getConnection("uap63_test", "1", "192.168.1.100", "orcl", "1521");
 		TriggerGenerator generator = new TriggerGenerator();
 		generator.setconn(conn);
 		generator.generate("CRPAS_BAOBU_h", null, true);

@@ -10,7 +10,8 @@ import java.util.Map.Entry;
 import net.sourceforge.jtds.jdbc.ColInfo;
 
 import cn.gaily.pub.util.CommonUtil;
-import cn.gaily.pub.util.JdbcUtils;
+import cn.gaily.simplejdbc.SimpleJdbc;
+import cn.gaily.simplejdbc.SimpleDSMgr;
 
 /**
  * <p>Title: ETLDeleteTask</P>
@@ -92,7 +93,7 @@ public class ETLDeleteTask extends AbstractETLTask{
 			e.printStackTrace();
 			throw new RuntimeException("É¾³ýÊý¾Ý³ö´í");
 		}finally{
-			JdbcUtils.release(null, pst, null);
+			SimpleJdbc.release(null, pst, null);
 			tarMgr.release(srcConn);
 		}
 	}
