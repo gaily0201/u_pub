@@ -10,7 +10,7 @@
 	<classpathentry kind="src" output="pub/classes" path="pub/src/private"/>
 	<classpathentry kind="src" output="pub/classes" path="pub/resources"/>
 	<classpathentry kind="src" output="pub/classes" path="pub/src/test"/>
-	<classpathentry kind="src" output="out/resources" path="resources"/>
+	<classpathentry kind="src" path="resources"/>
 	<classpathentry exported="true" kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry exported="true" kind="con" path="nc.uap.mde.library.container/Ant_Library"/>
 	<classpathentry exported="true" kind="con" path="nc.uap.mde.library.container/Product_Common_Library"/>
