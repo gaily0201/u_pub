@@ -1,7 +1,6 @@
 package cn.gaily.simplejdbc;
 
 import java.sql.Connection;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -31,11 +30,11 @@ public class SimpleDSMgr{
 	 */
 	public List<Connection> conns = new ArrayList<Connection>();
 	
-	private String dbName 	= null;
-	private String ip 		= null;
-	private String userName	= null;
+	private String dbName 	 = null;
+	private String ip 		 = null;
+	private String userName	 = null;
 	private String password  = null;
-	private String port 		= null;
+	private String port 	 = null;
 	
 	
 	/**
@@ -113,9 +112,37 @@ public class SimpleDSMgr{
 	}
 	
 
-	
 	public void setInitSize(int initSize) {
 		this.initSize = initSize;
 	}
-	
+	public String getDbName() {
+		return dbName;
+	}
+	public String getIp() {
+		return ip;
+	}
+	public String getUserName() {
+		return userName;
+	}
+	public String getPassword() {
+		return password;
+	}
+	public String getPort() {
+		return port;
+	}
+	public void setDbName(String dbName) {
+		this.dbName = dbName;
+	}
+	public void setIp(String ip) {
+		this.ip = ip;
+	}
+	public void setUserName(String userName) {
+		this.userName = userName;
+	}
+	public void setPassword(String password) {
+		this.password = password;
+	}
+	public void setPort(String port) {
+		this.port = port;
+	}
 }

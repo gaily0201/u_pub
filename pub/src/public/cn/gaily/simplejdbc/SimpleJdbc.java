@@ -98,23 +98,59 @@ public class SimpleJdbc{
 			try{
 				rs.close();
 				rs= null;
-			} catch (SQLException e) {
-			}finally{
-				if(st!=null){
-					try{
-						st.close();
-						st= null;
-					}catch(SQLException e){
-					}finally{
-						if(conn!=null){
-							try{
-								conn.close();
-								conn = null;
-							}catch(SQLException e){
-							}
-						}
-					}
-				}
+			}catch(SQLException e){
+				//ignore
+			}
+		}
+		
+		if(st!=null){
+			try{
+				st.close();
+				st = null;
+			}catch(SQLException e){
+				//ignore
+			}
+		}
+		if(conn!=null){
+			try{
+				conn.close();
+				conn = null;
+			}catch(SQLException e){
+				//ignore
+			}
+		}
+	}
+	
+	
+	public static void releaseRs(ResultSet rs){
+		if(rs!=null){
+			try{
+				rs.close();
+				rs= null;
+			}catch(SQLException e){
+				//ignore
+			}
+		}
+	}
+	
+	public static void releaseState(Statement st){
+		if(st!=null){
+			try{
+				st.close();
+				st = null;
+			}catch(SQLException e){
+				//ignore
+			}
+		}
+	}
+	
+	public static void releaseConn(Connection conn){
+		if(conn!=null){
+			try{
+				conn.close();
+				conn = null;
+			}catch(SQLException e){
+				//ignore
 			}
 		}
 	}

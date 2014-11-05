@@ -4,6 +4,7 @@ import java.awt.image.BufferedImage;
 import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.sql.Blob;
@@ -12,14 +13,18 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.Enumeration;
 import java.util.List;
 import java.util.Properties;
+
 import javax.imageio.ImageIO;
 import javax.swing.ImageIcon;
+
+import nc.bs.logging.Logger;
+
 import com.sun.image.codec.jpeg.JPEGCodec;
 import com.sun.image.codec.jpeg.JPEGEncodeParam;
 import com.sun.image.codec.jpeg.JPEGImageEncoder;
-import nc.bs.logging.Logger;
 
 /**
  * <p>Title: CommonUtil</P>
@@ -92,7 +97,7 @@ public class CommonUtil {
 	/**
 	 * 配置文件详细路径
 	 */
-	public static String PROPERTY_FILEPATH = "prop.properties";
+	public String propFilepath = "prop.properties";
 	
 	/**
 	 * <p>方法名称：isValidFloat</p>
@@ -355,10 +360,10 @@ public class CommonUtil {
 		return null;
 	}
 	
-	public static String getProperty(String key){
+	public String getProperty(String key){
 		Properties prop = null;
 		if(in==null){
-			in = CommonUtil.class.getResourceAsStream(PROPERTY_FILEPATH);
+			in = CommonUtil.class.getResourceAsStream(propFilepath);
 			prop = new Properties();
 			try {
 				prop.load(in);
@@ -377,7 +382,48 @@ public class CommonUtil {
 		return value;
 	}
 	
+	public void setProperty(String key,String value){
+		Properties prop = null;
+		FileOutputStream fos = null;
+		if(in==null){
+			prop = new Properties();
+			in = CommonUtil.class.getResourceAsStream(propFilepath);
+			String path = CommonUtil.class.getResource(propFilepath).getPath();
+			try {
+				fos = new FileOutputStream(path, true);
+				prop.load(in);
+				Enumeration e = prop.propertyNames();
+				int i=0;
+				while(e.hasMoreElements()){
+					String vv = (String) e.nextElement();
+					if(vv.equals(key)){
+						prop.clear();
+						prop.setProperty(vv, value);
+						i = 1;
+					}
+				}
+				prop.clear();
+				if(i==0){
+					prop.setProperty(key, value);
+				}
+				prop.store(fos, null);
+			} catch (IOException e) {
+				Logger.error(e);
+			} finally{
+				try {
+					in.close();
+					in = null;
+					fos.close();
+				} catch (IOException e) {
+					Logger.error(e);
+				}
+			}
+		}
+		
+	}
 	
-	
+	public void setPropFilepath(String propFilepath) {
+		this.propFilepath = propFilepath;
+	}
 	
 }

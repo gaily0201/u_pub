@@ -19,7 +19,24 @@ import cn.gaily.simplejdbc.SimpleJdbc;
  */
 public class TaskExecutor {
 
+	public SimpleDSMgr remote = null;
+	public SimpleDSMgr local = null;
 	
+	
+	public void execute(){
+		execute(remote, local);
+	}
+	
+	
+	/**
+	 * <p>方法名称：execute</p>
+	 * <p>方法描述：任务执行方法入口</p>
+	 * @param srcMgr
+	 * @param destMgr
+	 * @author xiaoh
+	 * @since  2014-11-5
+	 * <p> history 2014-11-5 xiaoh  创建   <p>
+	 */
 	public void execute(SimpleDSMgr srcMgr, SimpleDSMgr destMgr){
 		List<String> srcTableNames = getAllTables(srcMgr);
 		List<String> destTableNames = getAllTables(destMgr);
@@ -51,7 +68,7 @@ public class TaskExecutor {
 	 * @since  2014-11-4
 	 * <p> history 2014-11-4 xiaoh  创建   <p>
 	 */
-	public List<String> getAllTables(SimpleDSMgr mgr){
+	private List<String> getAllTables(SimpleDSMgr mgr){
 		List<String> tableNames = new ArrayList<String>();
 		
 		String sql ="SELECT TABLENAME FROM XFL_TABSTATUS WHERE STATUS=1";
@@ -76,4 +93,18 @@ public class TaskExecutor {
 		
 		return tableNames;
 	}
+	
+	public void setRemote(SimpleDSMgr remote) {
+		this.remote = remote;
+	}
+	public  SimpleDSMgr getRemote() {
+		return remote;
+	}
+	public SimpleDSMgr getLocal() {
+		return local;
+	}
+	public void setLocal(SimpleDSMgr local) {
+		this.local = local;
+	}
+	
 }

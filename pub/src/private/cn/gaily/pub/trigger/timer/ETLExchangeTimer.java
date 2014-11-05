@@ -1,36 +1,72 @@
 package cn.gaily.pub.trigger.timer;
 
-import cn.gaily.pub.trigger.TaskExecutor;
-import cn.gaily.simplejdbc.SimpleDSMgr;
 import nc.bs.pub.pa.PreAlertObject;
 import nc.bs.pub.taskcenter.BgWorkingContext;
 import nc.bs.pub.taskcenter.IBackgroundWorkPlugin;
 import nc.vo.pub.BusinessException;
+import cn.gaily.pub.trigger.TaskExecutor;
+import cn.gaily.pub.util.CommonUtil;
+import cn.gaily.simplejdbc.SimpleDSMgr;
 
 public class ETLExchangeTimer implements IBackgroundWorkPlugin{
 
 	@Override
 	public PreAlertObject executeTask(BgWorkingContext bgwc) throws BusinessException {
 		
-//		TaskExecutor task  = new TaskExecutor();
-//		SimpleDSMgr remote = new SimpleDSMgr();
-//		SimpleDSMgr local = new SimpleDSMgr();
-//		
-//		if(remote.conns.isEmpty()){
-//			remote.setInitSize(5);
-//			remote.initDB("orcl", "192.168.1.100", "uap63_test", "1", "1521");
-//			remote.init();
-//		}
-//		if(local.conns.isEmpty()){
-//			local.setInitSize(5);
-//			local.initDB("orcl", "192.168.1.100", "uap63", "1", "1521");
-//			local.init();
-//		}
-//		
-//		task.execute(remote, local);
-		int i = 0;
-		System.out.println(i++);
+		SimpleDSMgr remote = new SimpleDSMgr();
+		SimpleDSMgr local  = new SimpleDSMgr();
+		if(remote.conns.size()<=0||local.conns.size()<=0){
+			CommonUtil common = new CommonUtil();
+			common.setPropFilepath("/cn/gaily/pub/trigger/dbinfo.properties");
+			String rdbname = common.getProperty("remote.dbname");
+			String rusername = common.getProperty("remote.username");
+			String rpassword = common.getProperty("remote.password");
+			String rport = common.getProperty("remote.port");
+			String rip = common.getProperty("remote.ip");
+			String ldbname = common.getProperty("local.dbname");
+			String lusername = common.getProperty("local.username");
+			String lpassword = common.getProperty("local.password");
+			String lport = common.getProperty("local.port");
+			String lip = common.getProperty("local.ip");
+			
+			if(CommonUtil.isNotEmpty(rdbname)){
+				remote.setDbName(rdbname);
+			}
+			if(CommonUtil.isNotEmpty(rusername)){
+				remote.setUserName(rusername);
+			}
+			if(CommonUtil.isNotEmpty(rpassword)){
+				remote.setPassword(rpassword);
+			}
+			if(CommonUtil.isNotEmpty(rport)){
+				remote.setPort(rport);
+			}
+			if(CommonUtil.isNotEmpty(rip)){
+				remote.setIp(rip);
+			}
+			if(CommonUtil.isNotEmpty(ldbname)){
+				local.setDbName(ldbname);
+			}
+			if(CommonUtil.isNotEmpty(lusername)){
+				local.setUserName(lusername);
+			}
+			if(CommonUtil.isNotEmpty(lpassword)){
+				local.setPassword(lpassword);
+			}
+			if(CommonUtil.isNotEmpty(lport)){
+				local.setPort(lport);
+			}
+			if(CommonUtil.isNotEmpty(lip)){
+				local.setIp(lip);
+			}
+			remote.init();
+			local.init();
+		}
+		
+		TaskExecutor task = new TaskExecutor();
+		task.execute(remote, local);
 		return null;
 	}
-
+	
+	
 }
