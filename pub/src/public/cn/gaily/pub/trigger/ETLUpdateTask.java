@@ -88,9 +88,7 @@ public class ETLUpdateTask extends AbstractETLTask{
 		
 		Connection targetConn = tarMgr.getConnection();
 		try {
-			if(ipst==null){
-				ipst = targetConn.prepareStatement(sb.toString());
-			}
+			ipst = targetConn.prepareStatement(sb.toString());
 			ipst.clearParameters();
 			
 			for(Iterator it=colNameTypeMap.entrySet().iterator();it.hasNext();){

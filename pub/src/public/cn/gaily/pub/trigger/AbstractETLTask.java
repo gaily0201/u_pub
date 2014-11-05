@@ -18,11 +18,10 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.ArrayBlockingQueue;
 
-import com.ufgov.ui.ma99.ma9907.copysystem.action.DoDeleteSysAction;
-
 import cn.gaily.pub.util.CommonUtil;
-import cn.gaily.simplejdbc.SimpleJdbc;
 import cn.gaily.simplejdbc.SimpleDSMgr;
+import cn.gaily.simplejdbc.SimpleJdbc;
+
 
 /**
  * <p>Title: TriggerBaseTask</P>
@@ -274,7 +273,7 @@ public abstract class AbstractETLTask {
 	 * <p> history 2014-10-29 xiaoh  创建   <p>
 	 */
 	public void delTempData(SimpleDSMgr srcMgr, String tableName, String pkName) {//TODO 不能清空，在操作的时候，表中的数据可能修改
-		if(srcMgr==null||CommonUtil.isEmpty(tableName)||CommonUtil.isEmpty(pkName)){
+		if(srcMgr==null||CommonUtil.isEmpty(tableName)){
 			return ;
 		}
 		Connection srcConn = srcMgr.getConnection();
@@ -440,15 +439,19 @@ public abstract class AbstractETLTask {
 		
 		
 		String sql = null;
+		String sql1 = null;
 		if(type==0){
 			sql = "ALTER TABLE "+tableName+" DISABLE ALL TRIGGERS";
+			sql1 = "UPDATE XFL_TABSTATUS SET STATUS=0 WHERE TABLENAME='"+tableName+"'";
 		}else if(type==1){
 			sql = "ALTER TABLE "+tableName+" ENABLE ALL TRIGGERS";
+			sql1 = "UPDATE XFL_TABSTATUS SET STATUS=1 WHERE TABLENAME='"+tableName+"'";
 		}
 		Statement st = null;
 		try {
 			st = conn.createStatement();
 			st.execute(sql);
+			st.execute(sql1);
 		} catch (SQLException e) {
 			e.printStackTrace();
 			throw new RuntimeException("停用启用触发器出错"+e);

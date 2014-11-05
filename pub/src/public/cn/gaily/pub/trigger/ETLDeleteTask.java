@@ -78,9 +78,7 @@ public class ETLDeleteTask extends AbstractETLTask{
 		delSb.append(" WHERE ").append(pkName).append("=?");
 		colIndexMap.put(pkName, 1);
 		try {
-			if(pst==null){
-				pst = srcConn.prepareStatement(delSb.toString());
-			}
+			pst = srcConn.prepareStatement(delSb.toString());
 			pst.clearParameters();
 			
 			String colType =colNameTypeMap.get(pkName);
