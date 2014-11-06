@@ -7,9 +7,11 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.concurrent.ArrayBlockingQueue;
+
 import cn.gaily.pub.util.CommonUtil;
-import cn.gaily.simplejdbc.SimpleJdbc;
 import cn.gaily.simplejdbc.SimpleDSMgr;
+import cn.gaily.simplejdbc.SimpleJdbc;
 
 /**
  * <p>Title: ETLUpdateTask</P>
@@ -24,8 +26,6 @@ public class ETLUpdateTask extends AbstractETLTask{
 	
 	public static ETLUpdateTask instance = null;
 	
-	public PreparedStatement ipst = null;
-	
 	private ETLUpdateTask(){}
 	
 	public static ETLUpdateTask getInstance(){
@@ -34,6 +34,78 @@ public class ETLUpdateTask extends AbstractETLTask{
 		}
 		return instance;
 	}
+	
+	@Override
+	public void doBatch(SimpleDSMgr srcMgr, SimpleDSMgr tarMgr,
+						String tableName, String pkName,
+						ArrayBlockingQueue<Map<String, Object>> valueList,
+						Map<String, String> colNameTypeMap, Boolean canBatch) {
+		
+		PreparedStatement ipst = null;
+		StringBuilder sb = new StringBuilder();
+		sb.append("UPDATE ").append(tableName).append(" SET ");
+		String colName = null;
+		String colType = null;
+		Entry<String,String> entry =  null;
+		
+		int n=0;
+		int hasc = 0;  //记录位置
+		for(Iterator it=colNameTypeMap.entrySet().iterator();it.hasNext();){
+			entry = (Entry<String, String>) it.next();
+			colName = entry.getKey();
+			if(!"ETLSTATUS".equalsIgnoreCase(colName)&&!"ETLPKNAME".equalsIgnoreCase(colName)&&!"ETLTS".equalsIgnoreCase(colName)){
+				sb.append(colName).append("=?,");
+				colIndexMap.put(colName, ++n);
+				hasc++;
+			}
+		}
+		hasc++;
+		sb.deleteCharAt(sb.length()-1);
+		
+		sb.append(" WHERE ").append(pkName).append("=?");
+		
+		Connection targetConn = tarMgr.getConnection();
+		try {
+			targetConn.setAutoCommit(false);
+			ipst = targetConn.prepareStatement(sb.toString());
+			ipst.clearParameters();
+			Map<String, Object> valueMap = null;
+			String pkValue = null;
+			while(!valueList.isEmpty()){
+				valueMap = valueList.poll();
+				pkValue = (String) valueMap.get(pkName);  //TODO pk可能为int或者其他类型
+				if(CommonUtil.isEmpty(pkValue)){
+					throw new RuntimeException("更新数据未获取到主键");
+				}
+				for(Iterator it=colNameTypeMap.entrySet().iterator();it.hasNext();){
+					entry = (Entry<String, String>) it.next();
+					colName = entry.getKey();
+					colType = entry.getValue();
+					Object value = valueMap.get(colName);
+					List<String> ignoreCols = Arrays.asList(new String[]{"ETLSTATUS","ETLPKNAME","ETLTS"});
+					ipst = setValues(ipst, colName, colType, value, ignoreCols);  //设置列值
+				}
+				ipst.setString(hasc, pkValue); //TODO pk可能为int或者其他类型
+				ipst.addBatch();
+				ipst.clearParameters();
+			}
+			ipst.executeBatch();
+			targetConn.commit();
+		}catch (SQLException e) {
+			try {
+				targetConn.rollback();
+			} catch (SQLException e1) {
+				e1.printStackTrace();
+				throw new RuntimeException("更新数据库回滚数据出错"+e);
+			}
+			e.printStackTrace();
+			throw new RuntimeException("更新数据库异常"+e);
+		}finally{
+			SimpleJdbc.release(null, ipst, null);
+			tarMgr.release(targetConn);
+		}
+	}
+	
 	
 	@Override
 	public void doexecute(SimpleDSMgr srcMgr, SimpleDSMgr tarMgr, String tableName, String pkName, Map<String,Object> valueMap, Map<String,String> colNameTypeMap) {
@@ -64,6 +136,7 @@ public class ETLUpdateTask extends AbstractETLTask{
 	 * <p> history 2014-10-29 xiaoh  创建   <p>
 	 */
 	private void doUpdate(SimpleDSMgr tarMgr, String tableName, String pkName, Map<String, Object> valueMap, Map<String, String> colNameTypeMap) {
+		PreparedStatement ipst = null;
 		StringBuilder sb = new StringBuilder();
 		sb.append("UPDATE ").append(tableName).append(" SET ");
 		String colName = null;
@@ -108,6 +181,6 @@ public class ETLUpdateTask extends AbstractETLTask{
 			tarMgr.release(targetConn);
 		}
 	}
-	
+
 	
 }

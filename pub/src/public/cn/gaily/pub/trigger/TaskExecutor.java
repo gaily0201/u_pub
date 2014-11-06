@@ -44,20 +44,16 @@ public class TaskExecutor {
 		AbstractETLTask task = DefaultETLTask.getInstance();
 		for(String tableName: srcTableNames){
 			task.execute(srcMgr, destMgr, tableName);
-			if(destTableNames.contains(tableName)){
-				task.execute(destMgr, srcMgr, tableName);
-				destTableNames.remove(tableName);
-			}
+			task.execute(destMgr, srcMgr, tableName);
+			destTableNames.remove(tableName);
 		}
 		
-		if(!destTableNames.isEmpty()){
-			for(String tableName: destTableNames){
+		if(destTableNames.size()>0){
+			for(String tableName:destTableNames){
 				task.execute(destMgr, srcMgr, tableName);
 			}
 		}
-		
 	}
-	
 	
 	/**
 	 * <p>·½·¨Ãû³Æ£ºgetAllTables</p>
@@ -71,7 +67,7 @@ public class TaskExecutor {
 	private List<String> getAllTables(SimpleDSMgr mgr){
 		List<String> tableNames = new ArrayList<String>();
 		
-		String sql ="SELECT TABLENAME FROM XFL_TABSTATUS WHERE STATUS=1";
+		String sql ="SELECT TABLENAME FROM XFL_TABSTATUS WHERE STATUS='1'";
 		Connection conn = mgr.getConnection();
 		Statement st = null;
 		ResultSet rs = null;

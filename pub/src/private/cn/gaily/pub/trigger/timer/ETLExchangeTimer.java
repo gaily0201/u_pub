@@ -10,12 +10,15 @@ import cn.gaily.simplejdbc.SimpleDSMgr;
 
 public class ETLExchangeTimer implements IBackgroundWorkPlugin{
 
+	SimpleDSMgr remote = new SimpleDSMgr();
+	SimpleDSMgr local  = new SimpleDSMgr();
+
 	@Override
 	public PreAlertObject executeTask(BgWorkingContext bgwc) throws BusinessException {
 		
-		SimpleDSMgr remote = new SimpleDSMgr();
-		SimpleDSMgr local  = new SimpleDSMgr();
-		if(remote.conns.size()<=0||local.conns.size()<=0){
+		int count  = 0;
+		
+		while(remote.conns.size()<=0||local.conns.size()<=0){
 			CommonUtil common = new CommonUtil();
 			common.setPropFilepath("/cn/gaily/pub/trigger/dbinfo.properties");
 			String rdbname = common.getProperty("remote.dbname");
@@ -61,6 +64,12 @@ public class ETLExchangeTimer implements IBackgroundWorkPlugin{
 			}
 			remote.init();
 			local.init();
+			
+			count++;
+			if(count>=10){
+				throw new RuntimeException("获取数据源失败！");
+			}
+			
 		}
 		
 		TaskExecutor task = new TaskExecutor();

@@ -72,6 +72,11 @@ public class SimpleJdbc{
 	public static Connection getConnection(String userName, String password, String ip ,String dbName, String port){
 		conn = null;
 		try {
+			try {
+				Class.forName(DRIVER);
+			} catch (ClassNotFoundException e) {
+				e.printStackTrace();
+			}
 			String url = "jdbc:oracle:thin:@"+ip+":"+port+":"+dbName.toUpperCase();
 			conn = DriverManager.getConnection(url, userName, password);
 		} catch (SQLException e) {

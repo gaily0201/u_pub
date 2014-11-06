@@ -101,9 +101,9 @@ public abstract class AbstractETLTask {
 	
 	public void clear(){
 		valueList.clear();
-		colNameTypeMap.clear();
 		pkValues.clear();
 		colIndexMap.clear();
+		colNameTypeMap.clear();
 		
 	}
 	
@@ -126,55 +126,78 @@ public abstract class AbstractETLTask {
 		
 		enableTrigger(tarMgr, tableName, 0);  //停用触发器 //TODO 存在问题：在执行期间，数据可能丢失
 		
-		String onlyPkName = null;
+		String pkName = null;
+		Boolean canBatch =  null;
+		String status = null;
 		int round = 0;
 		while(true){
-			String pkName = queryTempData(tableName, srcMgr, batchSize, round++); //操作每张表的pk是唯一的
-			onlyPkName = pkName;
-			if(CommonUtil.isEmpty(pkName)){
+			Map<String,Object> recvMap = queryTempData(tableName, srcMgr, batchSize, round++); //操作每张表的pk是唯一的
+			canBatch = (Boolean) recvMap.get("canBatch");
+			pkName = (String) recvMap.get("pkName");
+			status = (String) recvMap.get("status");
+			
+			if(canBatch==null||CommonUtil.isEmpty(pkName)){
 				break;
 			}
-			Map<String,Object> map = null;
-			String status = null;
+			
 			AbstractETLTask task = null;
-			int i=0;
-			for(Iterator it= valueList.iterator();it.hasNext();){
-				map = (Map<String, Object>) valueList.poll();
-				if(map==null){
-					break;
-				}
-				status = (String) map.get("ETLSTATUS");
-				if(CommonUtil.isEmpty(status)){
-					continue;
-				}
-				
-				i++;
-				
+			if(canBatch){ //TODO 有BLOB时候，改成不用batch
 				int type = Integer.valueOf(status);
 				switch(type){
 				case NEW:
 					task = ETLInsertTask.getInstance();
-					System.out.println("insert: "+(round-1)+i); //TODO 测试用
 					break;
 				case UPDATE:
 					task = ETLUpdateTask.getInstance();
-					System.out.println("update: "+(round-1)+i); //TODO 测试用
 					break;
 				case DELETE:
 					task = ETLDeleteTask.getInstance();
-					System.out.println("delete: "+(round-1)+i); //TODO 测试用
 					break;
 				default:
 					throw new RuntimeException("出错");
 				}
-				
-				task.doexecute(srcMgr, tarMgr, tableName, pkName,  map, colNameTypeMap);
+				task.doBatch(srcMgr, tarMgr, tableName, pkName,  valueList, colNameTypeMap, canBatch);
+			}else{
+				Map<String,Object> map = null;
+				int i=0;
+				for(Iterator it= valueList.iterator();it.hasNext();){
+					map = (Map<String, Object>) valueList.poll();
+					if(map==null){
+						break;
+					}
+					status = (String) map.get("ETLSTATUS");
+					if(CommonUtil.isEmpty(status)){
+						continue;
+					}
+					
+					i++;
+					
+					int type = Integer.valueOf(status);
+					switch(type){
+					case NEW:
+						task = ETLInsertTask.getInstance();
+						System.out.println("insert: "+(round-1)+i); //TODO 测试用
+						break;
+					case UPDATE:
+						task = ETLUpdateTask.getInstance();
+						System.out.println("update: "+(round-1)+i); //TODO 测试用
+						break;
+					case DELETE:
+						task = ETLDeleteTask.getInstance();
+						System.out.println("delete: "+(round-1)+i); //TODO 测试用
+						break;
+					default:
+						throw new RuntimeException("出错");
+					}
+					
+					task.doexecute(srcMgr, tarMgr, tableName, pkName,  map, colNameTypeMap);
+				}
 			}
 		}
 		
 		enableTrigger(tarMgr, tableName, 1);  //恢复触发器
 		
-		delTempData(srcMgr, tableName, onlyPkName);
+		delTempData(srcMgr, tableName, null);
 		
 		//统一事务
 //		for(int i=0;i<srcMgr.conns.size();i++){
@@ -186,9 +209,28 @@ public abstract class AbstractETLTask {
 //			}
 //		}
 		
-		return onlyPkName;
+		return pkName;
 	}
 	
+	/**
+	 * <p>方法名称：doBatch</p>
+	 * <p>方法描述：执行批量</p>
+	 * @param srcMgr
+	 * @param tarMgr
+	 * @param tableName
+	 * @param pkName
+	 * @param valueList
+	 * @param colNameTypeMap
+	 * @param canBatch
+	 * @author xiaoh
+	 * @since  2014-11-5
+	 * <p> history 2014-11-5 xiaoh  创建   <p>
+	 */
+	public abstract void doBatch(SimpleDSMgr srcMgr, SimpleDSMgr tarMgr,
+								 String tableName, String pkName,
+								 ArrayBlockingQueue<Map<String, Object>> valueList,
+								 Map<String, String> colNameTypeMap, Boolean canBatch);
+
 	/**
 	 * <p>方法名称：doexecute</p>
 	 * <p>方法描述：执行DDL操作</p>
@@ -297,15 +339,19 @@ public abstract class AbstractETLTask {
 
 	/**
 	 * <p>方法名称：queryTempData</p>
-	 * <p>方法描述：查询所有临时表中的数据</p>
+	 * <p>方法描述：查询临时表中的数据</p>
 	 * @param tableName
 	 * @param srcMgr
-	 * @return
+	 * @return canBatch 是否能批量
 	 * @author xiaoh
 	 * @since  2014-10-29
 	 * <p> history 2014-10-29 xiaoh  创建   <p>
 	 */
-	public String queryTempData(String tableName,SimpleDSMgr srcMgr, int batchsize, int round) {
+	public Map<String,Object> queryTempData(String tableName,SimpleDSMgr srcMgr, int batchsize, int round) {
+		
+		Map<String,Object> returnMap = new HashMap<String,Object>();
+		
+		Boolean canBatch = true;
 		
 		valueList.clear();
 		
@@ -333,6 +379,7 @@ public abstract class AbstractETLTask {
 		
 		Statement st = null;
 		ResultSet rs = null;
+		String status = null;
 		try {
 			st  = srcConn.createStatement();
 			rs 	= st.executeQuery(querySrcSb.toString());
@@ -343,6 +390,16 @@ public abstract class AbstractETLTask {
 				for(Iterator it=colNameTypeMap.entrySet().iterator();it.hasNext();){
 					colName = ((Entry<String,String>)it.next()).getKey();
 					value = rs.getString(colName);
+					if("ETLSTATUS".equals(colName)){
+						if(status==null){
+							status=value;
+						}else if(!status.equals(value)){
+							canBatch = false;
+							status=value;
+						}else{
+							status = value;
+						}
+					}
 					valueMap.put(colName,value);
 				}
 				valueList.put(valueMap);
@@ -364,7 +421,12 @@ public abstract class AbstractETLTask {
 			SimpleJdbc.release(null, st, rs);
 			srcMgr.release(srcConn);
 		}
-		return pkName;
+		
+		returnMap.put("canBatch", canBatch);
+		returnMap.put("status", status);
+		returnMap.put("pkName", pkName);
+		
+		return returnMap;
 	}
 	
 	

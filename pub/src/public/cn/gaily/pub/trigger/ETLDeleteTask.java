@@ -3,15 +3,13 @@ package cn.gaily.pub.trigger;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
-import java.util.Iterator;
 import java.util.Map;
-import java.util.Map.Entry;
-
-import net.sourceforge.jtds.jdbc.ColInfo;
+import java.util.concurrent.ArrayBlockingQueue;
 
 import cn.gaily.pub.util.CommonUtil;
-import cn.gaily.simplejdbc.SimpleJdbc;
 import cn.gaily.simplejdbc.SimpleDSMgr;
+import cn.gaily.simplejdbc.SimpleJdbc;
+
 
 /**
  * <p>Title: ETLDeleteTask</P>
@@ -35,6 +33,51 @@ public class ETLDeleteTask extends AbstractETLTask{
 			instance = new ETLDeleteTask();
 		}
 		return instance;
+	}
+	
+	@Override
+	public void doBatch(SimpleDSMgr srcMgr, SimpleDSMgr tarMgr,
+						String tableName, String pkName,
+						ArrayBlockingQueue<Map<String, Object>> valueList,
+						Map<String, String> colNameTypeMap, Boolean canBatch) {
+		
+		if(tarMgr==null||CommonUtil.isEmpty(tableName)||CommonUtil.isEmpty(pkName)){
+			return ;
+		}
+		Map<String,Object> valueMap = null;
+		String pkValue = null;
+		
+		Connection srcConn = tarMgr.getConnection();
+		PreparedStatement pst = null;
+
+		StringBuilder delSb = new StringBuilder("DELETE FROM ");
+		delSb.append(tableName).append(" WHERE ").append(pkName);
+		delSb.append(" IN(");
+		for(int i=0;i<valueList.size();i++){
+			delSb.append("?,");
+		}
+		delSb.deleteCharAt(delSb.length()-1);
+		delSb.append(")");
+		try {
+			pst = srcConn.prepareStatement(delSb.toString());
+			int i = 1;
+			while(valueList.size()>0){
+				valueMap = valueList.poll();
+				pkValue = (String) valueMap.get(pkName);
+				pst.setString(i, pkValue);
+				i++;
+			}
+			int count = pst.executeUpdate();
+		} catch (SQLException e) {
+			e.printStackTrace();
+			throw new RuntimeException("É¾³ýÊý¾Ý³ö´í");
+		} finally{
+			SimpleJdbc.release(null, pst, null);
+			tarMgr.release(srcConn);
+		}
+		
+		
+		
 	}
 	
 	@Override
@@ -95,6 +138,7 @@ public class ETLDeleteTask extends AbstractETLTask{
 			tarMgr.release(srcConn);
 		}
 	}
+
 	
 	
 }

@@ -81,7 +81,9 @@ public class SimpleDSMgr{
 		Connection conn = null;
 		for(int i=0;i<initSize;i++){
 			conn = SimpleJdbc.getConnection(userName, password, ip, dbName, port);
-			conns.add(conn);
+			if(conn!=null){
+				conns.add(conn);
+			}
 //			try {
 //				conn.setAutoCommit(false);
 //			} catch (SQLException e) {

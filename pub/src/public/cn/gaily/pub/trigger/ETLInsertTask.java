@@ -8,10 +8,12 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.concurrent.ArrayBlockingQueue;
 
 import cn.gaily.pub.util.CommonUtil;
-import cn.gaily.simplejdbc.SimpleJdbc;
 import cn.gaily.simplejdbc.SimpleDSMgr;
+import cn.gaily.simplejdbc.SimpleJdbc;
+
 
 /**
  * <p>Title: ETLInsertTask</P>
@@ -27,7 +29,6 @@ public class ETLInsertTask extends AbstractETLTask{
 	public static ETLInsertTask instance = null;
 	
 	
-	public PreparedStatement pst = null;
 	
 	private ETLInsertTask(){}
 	
@@ -36,6 +37,72 @@ public class ETLInsertTask extends AbstractETLTask{
 			instance = new ETLInsertTask();
 		}
 		return instance;
+	}
+	
+	
+	
+	@Override
+	public void doBatch(SimpleDSMgr srcMgr, SimpleDSMgr tarMgr,
+						String tableName, String pkName,
+						ArrayBlockingQueue<Map<String, Object>> valueList,
+						Map<String, String> colNameTypeMap, Boolean canBatch) {
+		
+		if(srcMgr==null||tarMgr==null||CommonUtil.isEmpty(tableName)){
+			throw new RuntimeException("新增数据库操作参数出错");
+		}
+		StringBuilder tarSb = new StringBuilder();
+		tarSb.append("INSERT INTO ").append(tableName).append("(");
+		String colName = null;
+		String colType = null;
+		Entry<String,String> entry =  null;
+		
+		int n=0;
+		for(Iterator it=colNameTypeMap.entrySet().iterator();it.hasNext();){
+			entry = (Entry<String, String>) it.next();
+			colName = entry.getKey();
+			if(!"ETLSTATUS".equalsIgnoreCase(colName)&&!"ETLPKNAME".equalsIgnoreCase(colName)&&!"ETLTS".equalsIgnoreCase(colName)){
+				tarSb.append(colName).append(",");
+				colIndexMap.put(colName, ++n);
+			}
+		}
+		tarSb.deleteCharAt(tarSb.length()-1);
+		tarSb.append(") VALUES(");
+		for(int i=0;i<colNameTypeMap.size()-3;i++){
+			tarSb.append("?,");
+		}
+		tarSb.deleteCharAt(tarSb.length()-1);
+		tarSb.append(") ");
+		String insertSql = tarSb.toString();
+		
+		PreparedStatement pst = null;
+		Connection targetConn = tarMgr.getConnection();
+		try {
+			targetConn.setAutoCommit(false);
+			pst = targetConn.prepareStatement(insertSql);
+			Map<String, Object> valueMap = null;
+			while(!valueList.isEmpty()){
+				valueMap = valueList.poll();
+				for(Iterator it=colNameTypeMap.entrySet().iterator();it.hasNext();){
+					entry = (Entry<String, String>) it.next();
+					colName = entry.getKey();
+					colType = entry.getValue();
+					Object value = valueMap.get(colName);
+					List<String> ignoreCols = Arrays.asList(new String[]{"ETLSTATUS","ETLPKNAME","ETLTS"});
+					pst =setValues(pst, colName, colType, value, ignoreCols);  //设置列值
+				}
+				pst.addBatch();
+				pst.clearParameters();
+			}
+			pst.executeBatch();
+			targetConn.commit();
+		}catch (SQLException e) {
+			e.printStackTrace();
+			throw new RuntimeException("插入数据库异常");
+		}finally{
+			SimpleJdbc.release(null, pst, null);
+			tarMgr.release(targetConn);
+		}
+		
 	}
 	
 	/**
@@ -100,11 +167,12 @@ public class ETLInsertTask extends AbstractETLTask{
 		tarSb.append(") ");
 		String insertSql = tarSb.toString();
 		
+		PreparedStatement pst = null;
 		Connection targetConn = tarMgr.getConnection();
 		try {
-			if(pst==null){
-				pst = targetConn.prepareStatement(insertSql);
-			}
+//			if(pst==null){
+//			}
+			pst = targetConn.prepareStatement(insertSql);
 			pst.clearParameters();
 			
 			for(Iterator it=colNameTypeMap.entrySet().iterator();it.hasNext();){

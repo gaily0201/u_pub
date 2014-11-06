@@ -56,7 +56,7 @@ public class TriggerGenerator {
 			sql = buildTriggerSql(tableName, type); 
 			execSql(sql);
 		}
-		System.out.println("build Sussesful!");
+		System.out.println(tableName+"->build Sussesful!");
 	}
 	
 	/**
@@ -79,7 +79,7 @@ public class TriggerGenerator {
 			e.printStackTrace();
 			throw new RuntimeException("执行创建触发器出错: "+e);
 		}finally{
-			SimpleJdbc.release(conn, st, null);
+			SimpleJdbc.release(null, st, null);
 		}
 	}
 	

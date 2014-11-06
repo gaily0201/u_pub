@@ -1,6 +1,7 @@
 package cn.gaily.pub.trigger;
 
 import java.util.Map;
+import java.util.concurrent.ArrayBlockingQueue;
 
 import cn.gaily.simplejdbc.SimpleDSMgr;
 
@@ -27,6 +28,12 @@ public class DefaultETLTask extends AbstractETLTask {
 	
 	@Override
 	public void doexecute(SimpleDSMgr srcMgr, SimpleDSMgr tarMgr, String tableName, String pkName, Map<String, Object> valueMap,Map<String,String> colNameTypeMap) {
+	}
+
+	@Override
+	public void doBatch(SimpleDSMgr srcMgr, SimpleDSMgr tarMgr, String tableName, String pkName,
+						ArrayBlockingQueue<Map<String, Object>> valueList,
+						Map<String, String> colNameTypeMap, Boolean canBatch) {
 	}
 
 }
