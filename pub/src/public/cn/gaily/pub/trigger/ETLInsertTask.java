@@ -3,6 +3,7 @@ package cn.gaily.pub.trigger;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
@@ -73,11 +74,15 @@ public class ETLInsertTask extends AbstractETLTask{
 		tarSb.deleteCharAt(tarSb.length()-1);
 		tarSb.append(") ");
 		String insertSql = tarSb.toString();
+
+		List<String> insertPks = new ArrayList<String>(); //保存插入的数据的pk值,便于删除使用
 		
 		PreparedStatement pst = null;
 		Connection targetConn = tarMgr.getConnection();
+		Connection srcConn = srcMgr.getConnection();
 		try {
 			targetConn.setAutoCommit(false);
+			srcConn.setAutoCommit(false);
 			pst = targetConn.prepareStatement(insertSql);
 			Map<String, Object> valueMap = null;
 			while(!valueList.isEmpty()){
@@ -87,6 +92,9 @@ public class ETLInsertTask extends AbstractETLTask{
 					colName = entry.getKey();
 					colType = entry.getValue();
 					Object value = valueMap.get(colName);
+					if(colName.equals(pkName)){
+						insertPks.add((String)value);   //TODO 可能主键字段数据不是String类型
+					}
 					List<String> ignoreCols = Arrays.asList(new String[]{"ETLSTATUS","ETLPKNAME","ETLTS"});
 					pst =setValues(pst, colName, colType, value, ignoreCols);  //设置列值
 				}
@@ -94,17 +102,31 @@ public class ETLInsertTask extends AbstractETLTask{
 				pst.clearParameters();
 			}
 			pst.executeBatch();
+			
+			srcConn = delTemp(pkName, insertPks, tablePrefix+tableName, srcConn, NEW); //删除出本次操作临时表数据
+			
 			targetConn.commit();
+			srcConn.commit();
+			
 		}catch (SQLException e) {
+			try {
+				targetConn.rollback();
+				srcConn.rollback();
+			} catch (SQLException e1) {
+				e1.printStackTrace();
+				throw new RuntimeException("回滚数据异常"+e);
+			}
 			e.printStackTrace();
-			throw new RuntimeException("插入数据库异常");
+			throw new RuntimeException("插入数据库异常"+e);
 		}finally{
 			SimpleJdbc.release(null, pst, null);
 			tarMgr.release(targetConn);
+			tarMgr.release(srcConn);
 		}
 		
 	}
 	
+
 	/**
 	 * <p>方法名称：dealAdd</p>
 	 * <p>方法描述：处理新增数据</p>
@@ -124,7 +146,7 @@ public class ETLInsertTask extends AbstractETLTask{
 //		enableTrigger(tarMgr, tableName, DISABLE);
 		
 		//2、执行目标库数据库插入
-		doAddInsert(tarMgr, tableName, valueMap, colNameTypeMap);
+		doAddInsert(srcMgr, tarMgr, tableName, valueMap,pkName, colNameTypeMap);
 		
 		//3、启用目标库触发器
 //		enableTrigger(tarMgr, tableName, ENABLE);
@@ -139,7 +161,7 @@ public class ETLInsertTask extends AbstractETLTask{
 	 * @since  2014-10-29
 	 * <p> history 2014-10-29 xiaoh  创建   <p>
 	 */
-	private void doAddInsert(SimpleDSMgr tarMgr, String tableName, Map<String,Object> valueMap, Map<String,String> colNameTypeMap) {
+	private void doAddInsert(SimpleDSMgr srcMgr, SimpleDSMgr tarMgr, String tableName, Map<String,Object> valueMap,String pkName, Map<String,String> colNameTypeMap) {
 		if(tarMgr==null||CommonUtil.isEmpty(tableName)||valueMap.isEmpty()){
 			return ;
 		}
@@ -169,9 +191,14 @@ public class ETLInsertTask extends AbstractETLTask{
 		
 		PreparedStatement pst = null;
 		Connection targetConn = tarMgr.getConnection();
+		Connection srcConn = srcMgr.getConnection();
+		String pkValue = null;
+		List<String> insertPks = new ArrayList<String>();
 		try {
 //			if(pst==null){
 //			}
+			targetConn.setAutoCommit(false);
+			srcConn.setAutoCommit(false);
 			pst = targetConn.prepareStatement(insertSql);
 			pst.clearParameters();
 			
@@ -180,16 +207,31 @@ public class ETLInsertTask extends AbstractETLTask{
 				colName = entry.getKey();
 				colType = entry.getValue();
 				Object value = valueMap.get(colName);
+				if(colName.equals(pkName)){
+					pkValue = (String) value;
+					insertPks.add(pkValue);
+				}
 				List<String> ignoreCols = Arrays.asList(new String[]{"ETLSTATUS","ETLPKNAME","ETLTS"});
 				pst =setValues(pst, colName, colType, value, ignoreCols);  //设置列值
 			}
 			pst.execute();
+			srcConn = delTemp(pkName, insertPks, tablePrefix+tableName, srcConn, NEW); //删除出本次操作临时表数据
+			targetConn.commit();
+			srcConn.commit();
 		} catch (SQLException e) {
+			try {
+				targetConn.rollback();
+				srcConn.commit();
+			} catch (SQLException e1) {
+				e1.printStackTrace();
+				throw new RuntimeException("回滚数据异常"+e);
+			}
 			e.printStackTrace();
-			throw new RuntimeException("插入数据库异常");
+			throw new RuntimeException("插入数据库异常"+e);
 		}finally{
 			SimpleJdbc.release(null, pst, null);
 			tarMgr.release(targetConn);
+			srcMgr.release(srcConn);
 		}
 	}
 

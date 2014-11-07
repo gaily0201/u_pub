@@ -3,6 +3,8 @@ package cn.gaily.pub.trigger;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ArrayBlockingQueue;
 
@@ -47,9 +49,12 @@ public class ETLDeleteTask extends AbstractETLTask{
 		Map<String,Object> valueMap = null;
 		String pkValue = null;
 		
-		Connection srcConn = tarMgr.getConnection();
+		Connection tarConn = tarMgr.getConnection();
+		Connection srcConn = srcMgr.getConnection();
 		PreparedStatement pst = null;
 
+		List<String> insertPks = new ArrayList<String>(); 
+		
 		StringBuilder delSb = new StringBuilder("DELETE FROM ");
 		delSb.append(tableName).append(" WHERE ").append(pkName);
 		delSb.append(" IN(");
@@ -58,21 +63,40 @@ public class ETLDeleteTask extends AbstractETLTask{
 		}
 		delSb.deleteCharAt(delSb.length()-1);
 		delSb.append(")");
+		
 		try {
-			pst = srcConn.prepareStatement(delSb.toString());
+			tarConn.setAutoCommit(false);
+			srcConn.setAutoCommit(false);
+			pst = tarConn.prepareStatement(delSb.toString());
 			int i = 1;
 			while(valueList.size()>0){
 				valueMap = valueList.poll();
 				pkValue = (String) valueMap.get(pkName);
+				insertPks.add(pkValue);
 				pst.setString(i, pkValue);
 				i++;
 			}
+			
 			int count = pst.executeUpdate();
+			srcConn = delTemp(pkName, insertPks, tablePrefix+tableName, srcConn, DELETE);
+			
+			tarConn.commit();
+			srcConn.commit();
+			
 		} catch (SQLException e) {
+			try {
+				tarConn.rollback();
+				srcConn.rollback();
+			} catch (SQLException e1) {
+				e1.printStackTrace();
+				throw new RuntimeException("更新数据库回滚数据出错"+e1);
+				
+			}
 			e.printStackTrace();
-			throw new RuntimeException("删除数据出错");
+			throw new RuntimeException("删除数据出错"+e);
 		} finally{
 			SimpleJdbc.release(null, pst, null);
+			tarMgr.release(tarConn);
 			tarMgr.release(srcConn);
 		}
 		
@@ -91,7 +115,7 @@ public class ETLDeleteTask extends AbstractETLTask{
 			return;
 		}
 		//2.删除目标表中的数据
-		doDelete(tarMgr, tableName, pkName, pkValue, colNameTypeMap);
+		doDelete(srcMgr, tarMgr, tableName, pkName, pkValue, colNameTypeMap);
 		
 		//3.启用目标数据源触发器
 //		enableTrigger(tarMgr, tableName, ENABLE);
@@ -109,19 +133,25 @@ public class ETLDeleteTask extends AbstractETLTask{
 	 * @since  2014-10-29
 	 * <p> history 2014-10-29 xiaoh  创建   <p>
 	 */
-	public void doDelete(SimpleDSMgr tarMgr, String tableName, String pkName, String pkValue, Map<String,String> colNameTypeMap) {
+	public void doDelete(SimpleDSMgr srcMgr, SimpleDSMgr tarMgr, String tableName, String pkName, String pkValue, Map<String,String> colNameTypeMap) {
 		
 		if(tarMgr==null||CommonUtil.isEmpty(tableName)||CommonUtil.isEmpty(pkName)){
 			return ;
 		}
 		
-		Connection srcConn = tarMgr.getConnection();
+		Connection tarConn = tarMgr.getConnection();
+		Connection srcConn = srcMgr.getConnection();
 		StringBuilder delSb = new StringBuilder("DELETE FROM ");
 		delSb.append(tableName);
 		delSb.append(" WHERE ").append(pkName).append("=?");
 		colIndexMap.put(pkName, 1);
+		
+		List<String> insertPks = new ArrayList<String>(); 
+		insertPks.add(pkValue);
 		try {
-			pst = srcConn.prepareStatement(delSb.toString());
+			tarConn.setAutoCommit(false);
+			srcConn.setAutoCommit(false);
+			pst = tarConn.prepareStatement(delSb.toString());
 			pst.clearParameters();
 			
 			String colType =colNameTypeMap.get(pkName);
@@ -130,11 +160,25 @@ public class ETLDeleteTask extends AbstractETLTask{
 			}
 			pst = setValues(pst, pkName, colType, pkValue, null);
 			int i= pst.executeUpdate();
+			srcConn = delTemp(pkName, insertPks, tablePrefix+tableName, srcConn,DELETE);
+			
+			tarConn.commit();
+			srcConn.commit();
+			
 		} catch (SQLException e) {
+			try {
+				tarConn.rollback();
+				srcConn.rollback();
+			} catch (SQLException e1) {
+				e1.printStackTrace();
+				throw new RuntimeException("更新数据库回滚数据出错"+e1);
+				
+			}
 			e.printStackTrace();
-			throw new RuntimeException("删除数据出错");
+			throw new RuntimeException("删除数据出错"+e);
 		}finally{
 			SimpleJdbc.release(null, pst, null);
+			tarMgr.release(tarConn);
 			tarMgr.release(srcConn);
 		}
 	}

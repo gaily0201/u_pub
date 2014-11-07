@@ -2,6 +2,7 @@ package cn.gaily.pub.trigger;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
@@ -64,9 +65,13 @@ public class ETLUpdateTask extends AbstractETLTask{
 		
 		sb.append(" WHERE ").append(pkName).append("=?");
 		
+		List<String> insertPks = new ArrayList<String>(); 
+		
 		Connection targetConn = tarMgr.getConnection();
+		Connection srcConn = srcMgr.getConnection();
 		try {
 			targetConn.setAutoCommit(false);
+			srcConn.setAutoCommit(false);
 			ipst = targetConn.prepareStatement(sb.toString());
 			ipst.clearParameters();
 			Map<String, Object> valueMap = null;
@@ -82,6 +87,9 @@ public class ETLUpdateTask extends AbstractETLTask{
 					colName = entry.getKey();
 					colType = entry.getValue();
 					Object value = valueMap.get(colName);
+					if(colName.equals(pkName)){
+						insertPks.add((String)value);   //TODO 可能主键字段数据不是String类型
+					}
 					List<String> ignoreCols = Arrays.asList(new String[]{"ETLSTATUS","ETLPKNAME","ETLTS"});
 					ipst = setValues(ipst, colName, colType, value, ignoreCols);  //设置列值
 				}
@@ -90,19 +98,23 @@ public class ETLUpdateTask extends AbstractETLTask{
 				ipst.clearParameters();
 			}
 			ipst.executeBatch();
+			srcConn = delTemp(pkName, insertPks, tablePrefix+tableName, srcConn, UPDATE); //删除出本次操作临时表数据
 			targetConn.commit();
+			srcConn.commit();
 		}catch (SQLException e) {
 			try {
 				targetConn.rollback();
+				srcConn.rollback();
 			} catch (SQLException e1) {
 				e1.printStackTrace();
-				throw new RuntimeException("更新数据库回滚数据出错"+e);
+				throw new RuntimeException("更新数据库回滚数据出错"+e1);
 			}
 			e.printStackTrace();
 			throw new RuntimeException("更新数据库异常"+e);
 		}finally{
 			SimpleJdbc.release(null, ipst, null);
 			tarMgr.release(targetConn);
+			srcMgr.release(srcConn);
 		}
 	}
 	
@@ -117,7 +129,7 @@ public class ETLUpdateTask extends AbstractETLTask{
 //		enableTrigger(tarMgr, tableName, DISABLE);
 		
 		//2、执行目标库数据库更新
-		doUpdate(tarMgr, tableName,pkName, valueMap, colNameTypeMap);
+		doUpdate(srcMgr, tarMgr, tableName,pkName, valueMap, colNameTypeMap);
 		
 		//4、启用目标库触发器
 //		enableTrigger(tarMgr, tableName, ENABLE);
@@ -135,7 +147,7 @@ public class ETLUpdateTask extends AbstractETLTask{
 	 * @since  2014-10-29
 	 * <p> history 2014-10-29 xiaoh  创建   <p>
 	 */
-	private void doUpdate(SimpleDSMgr tarMgr, String tableName, String pkName, Map<String, Object> valueMap, Map<String, String> colNameTypeMap) {
+	private void doUpdate(SimpleDSMgr srcMgr, SimpleDSMgr tarMgr, String tableName, String pkName, Map<String, Object> valueMap, Map<String, String> colNameTypeMap) {
 		PreparedStatement ipst = null;
 		StringBuilder sb = new StringBuilder();
 		sb.append("UPDATE ").append(tableName).append(" SET ");
@@ -159,8 +171,13 @@ public class ETLUpdateTask extends AbstractETLTask{
 		}
 		sb.append(" WHERE ").append(pkName).append("='").append(pkValue).append("'");
 		
+		List<String> insertPks = new ArrayList<String>();
+		insertPks.add(pkValue);
 		Connection targetConn = tarMgr.getConnection();
+		Connection srcConn = srcMgr.getConnection();
 		try {
+			targetConn.setAutoCommit(false);
+			srcConn.setAutoCommit(false);
 			ipst = targetConn.prepareStatement(sb.toString());
 			ipst.clearParameters();
 			
@@ -173,12 +190,23 @@ public class ETLUpdateTask extends AbstractETLTask{
 				ipst =setValues(ipst, colName, colType, value, ignoreCols);  //设置列值
 			}
 			ipst.execute();
+			srcConn = delTemp(pkName, insertPks, tablePrefix+tableName, srcConn, UPDATE); //删除出本次操作临时表数据
+			targetConn.commit();
+			srcConn.commit();
 		} catch (SQLException e) {
+			try {
+				targetConn.rollback();
+				srcConn.rollback();
+			} catch (SQLException e1) {
+				e1.printStackTrace();
+				throw new RuntimeException("更新数据库回滚数据出错"+e1);
+			}
 			e.printStackTrace();
 			throw new RuntimeException("更新数据库异常");
 		}finally{
 			SimpleJdbc.release(null, ipst, null);
 			tarMgr.release(targetConn);
+			srcMgr.release(srcConn);
 		}
 	}
 

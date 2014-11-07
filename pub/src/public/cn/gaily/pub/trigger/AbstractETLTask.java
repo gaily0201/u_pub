@@ -197,7 +197,7 @@ public abstract class AbstractETLTask {
 		
 		enableTrigger(tarMgr, tableName, 1);  //恢复触发器
 		
-		delTempData(srcMgr, tableName, null);
+//		delTempData(srcMgr, tableName, null);
 		
 		//统一事务
 //		for(int i=0;i<srcMgr.conns.size();i++){
@@ -538,4 +538,66 @@ public abstract class AbstractETLTask {
 //			mgr.release(conn);
 //		}
 	}
+	
+	/**
+	 * <p>方法名称：delTemp</p>
+	 * <p>方法描述：删除临时表数据</p>
+	 * @param pkName		主键字段
+	 * @param insertPks		pk值
+	 * @param tableName		表名
+	 * @author xiaoh
+	 * @since  2014-11-7
+	 * <p> history 2014-11-7 xiaoh  创建   <p>
+	 */
+	protected Connection delTemp(String pkName, List<String> insertPks, String tableName, Connection conn, int type) {
+		if(CommonUtil.isEmpty(pkName)||CommonUtil.isEmpty(tableName)||conn==null||(type!=1&&type!=2&&type!=3)){
+			throw new RuntimeException("删除临时表数据传入参数不能为空");
+		}
+		if(insertPks.size()<=0){
+			return conn;
+		}
+		
+		int delSize = 500;
+		
+		StringBuilder sb = null;
+		String value = null;
+		Statement st = null;
+		
+		int round = insertPks.size()%delSize + 1;
+
+		try {
+			st = conn.createStatement();
+			
+			for(int i=0;i<round;i++){
+				sb = new StringBuilder("DELETE FROM ");
+				sb.append(tableName).append(" WHERE ").append(pkName);
+				sb.append(" IN('");
+				for(int j=0;j<delSize&&insertPks.size()>0;j++){
+					value = insertPks.remove(0);
+					if(CommonUtil.isEmpty(value)){
+						continue;
+					}else{
+						sb.append(value).append("','");
+					}
+				}
+				sb.deleteCharAt(sb.length()-1);
+				sb.deleteCharAt(sb.length()-1);
+				sb.append(")");
+				if(!sb.toString().contains("(")){
+					return conn;
+				}
+				sb.append(" WHERE ETLSTATUS='").append(String.valueOf(type)).append("'");
+				
+				int cc = st.executeUpdate(sb.toString());
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+			throw new RuntimeException("删除临时表数据异常！"+e);
+		} finally{
+			SimpleJdbc.release(null, st, null);
+		}
+		return conn;
+	}
+	
+	
 }

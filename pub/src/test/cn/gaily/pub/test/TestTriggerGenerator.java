@@ -33,7 +33,7 @@ public class TestTriggerGenerator extends AbstractTestCase {
 		}
 		
 		AbstractETLTask task = DefaultETLTask.getInstance();
-		task.execute(local, remote, "CRPAS_BAOBU_B");
+		task.execute(local, remote, "CRPAS_GAJ_AJXX_SACW_B");
 		long end = System.currentTimeMillis();
 		System.out.println(end-start);
 	}
