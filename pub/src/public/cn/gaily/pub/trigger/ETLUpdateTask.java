@@ -98,7 +98,7 @@ public class ETLUpdateTask extends AbstractETLTask{
 				ipst.clearParameters();
 			}
 			ipst.executeBatch();
-			System.out.println("UPDATE" + valueList.size()+" record");
+			System.out.println("UPDATE " + batchSize +" record");
 			srcConn = delTemp(pkName, insertPks, tablePrefix+tableName, srcConn, UPDATE, true); //删除出本次操作临时表数据
 			targetConn.commit();
 			srcConn.commit();

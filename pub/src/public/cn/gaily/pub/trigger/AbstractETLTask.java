@@ -58,7 +58,7 @@ public abstract class AbstractETLTask {
 	/**
 	 * 批量查询大小
 	 */
-	public final int batchSize = 800;
+	public final int batchSize = 2048;
 	
 	/**
 	 * 触发器管理表
@@ -124,13 +124,16 @@ public abstract class AbstractETLTask {
 		
 		clear();
 		
-		enableTrigger(tarMgr, tableName, 0);  //停用触发器 //TODO 存在问题：在执行期间，数据可能丢失
+		enableTrigger(tarMgr, tableName, DISABLE);  //停用触发器 //TODO 存在问题：在执行期间，数据可能丢失
 		
 		String pkName = null;
 		Boolean canBatch =  null;
 		String status = null;
 		int round = 0;
 		while(true){
+			
+			long start = System.currentTimeMillis();
+			
 			System.out.println(++round);
 			Map<String,Object> recvMap = queryTempData(tableName, srcMgr, batchSize, 0); //操作每张表的pk是唯一的
 			canBatch = (Boolean) recvMap.get("canBatch");
@@ -177,15 +180,15 @@ public abstract class AbstractETLTask {
 					switch(type){
 					case NEW:
 						task = ETLInsertTask.getInstance();
-						System.out.println("insert: "+(round-1)+i); //TODO 测试用
+						System.out.println("insert: "+((round-1)*batchSize+i)); //TODO 测试用
 						break;
 					case UPDATE:
 						task = ETLUpdateTask.getInstance();
-						System.out.println("update: "+(round-1)+i); //TODO 测试用
+						System.out.println("update: "+((round-1)*batchSize+i)); //TODO 测试用
 						break;
 					case DELETE:
 						task = ETLDeleteTask.getInstance();
-						System.out.println("delete: "+(round-1)+i); //TODO 测试用
+						System.out.println("delete: "+((round-1)*batchSize+i)); //TODO 测试用
 						break;
 					default:
 						throw new RuntimeException("出错");
@@ -194,9 +197,12 @@ public abstract class AbstractETLTask {
 					task.doexecute(srcMgr, tarMgr, tableName, pkName,  map, colNameTypeMap);
 				}
 			}
+			
+			long end = System.currentTimeMillis();
+			System.out.println("costs: " +(end-start) +"ms");
 		}
 		
-		enableTrigger(tarMgr, tableName, 1);  //恢复触发器
+		enableTrigger(tarMgr, tableName, ENABLE);  //恢复触发器
 		
 //		delTempData(srcMgr, tableName, null);
 		
@@ -570,7 +576,7 @@ public abstract class AbstractETLTask {
 			return conn;
 		}
 		
-		int delSize = batchSize;
+		int delSize = 500;
 		
 		StringBuilder sb = null;
 		String value = null;
@@ -603,7 +609,7 @@ public abstract class AbstractETLTask {
 				}
 				sb.append(" AND ETLSTATUS='").append(String.valueOf(type)).append("'");
 				if(batch){
-					sb.append(" AND ROWNUM<=").append(batchSize);
+					sb.append(" AND ROWNUM<=").append(delSize);
 				}else{
 					sb.append(" AND ROWNUM<=").append(1);  //fix 141109限定范围删除
 				}
