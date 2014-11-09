@@ -5,10 +5,12 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 import java.util.concurrent.ArrayBlockingQueue;
 
 import cn.gaily.pub.util.CommonUtil;
@@ -48,6 +50,18 @@ public class ETLInsertTask extends AbstractETLTask{
 						ArrayBlockingQueue<Map<String, Object>> valueList,
 						Map<String, String> colNameTypeMap, Boolean canBatch) {
 		
+		//watch connections in datasource
+//			try {
+//					for(Connection conn:srcMgr.conns){
+//						System.out.println("srcMgr: "+ conn.getMetaData().getUserName().toString());
+//					}
+//					for(Connection conn:tarMgr.conns){
+//						System.out.println("tarMgr: "+ conn.getMetaData().getUserName().toString());
+//					}
+//			} catch (SQLException e) {
+//				e.printStackTrace();
+//			}
+		
 		if(srcMgr==null||tarMgr==null||CommonUtil.isEmpty(tableName)){
 			throw new RuntimeException("新增数据库操作参数出错");
 		}
@@ -74,7 +88,7 @@ public class ETLInsertTask extends AbstractETLTask{
 		tarSb.deleteCharAt(tarSb.length()-1);
 		tarSb.append(") ");
 		String insertSql = tarSb.toString();
-
+		System.out.println(insertSql);
 		List<String> insertPks = new ArrayList<String>(); //保存插入的数据的pk值,便于删除使用
 		
 		PreparedStatement pst = null;
@@ -99,14 +113,16 @@ public class ETLInsertTask extends AbstractETLTask{
 					pst =setValues(pst, colName, colType, value, ignoreCols);  //设置列值
 				}
 				pst.addBatch();
-				pst.clearParameters();
 			}
-			pst.executeBatch();
 			
-			srcConn = delTemp(pkName, insertPks, tablePrefix+tableName, srcConn, NEW); //删除出本次操作临时表数据
+			pst.executeBatch();
+			System.out.println("insert "+ batchSize +" record");
+			srcConn = delTemp(pkName, insertPks, tablePrefix+tableName, srcConn, NEW, true); //删除出本次操作临时表数据
 			
 			targetConn.commit();
 			srcConn.commit();
+			pst.clearParameters();
+			pst.clearBatch();
 			
 		}catch (SQLException e) {
 			try {
@@ -121,7 +137,7 @@ public class ETLInsertTask extends AbstractETLTask{
 		}finally{
 			SimpleJdbc.release(null, pst, null);
 			tarMgr.release(targetConn);
-			tarMgr.release(srcConn);
+			srcMgr.release(srcConn);
 		}
 		
 	}
@@ -188,15 +204,13 @@ public class ETLInsertTask extends AbstractETLTask{
 		tarSb.deleteCharAt(tarSb.length()-1);
 		tarSb.append(") ");
 		String insertSql = tarSb.toString();
-		
+		System.out.println(insertSql);
 		PreparedStatement pst = null;
 		Connection targetConn = tarMgr.getConnection();
 		Connection srcConn = srcMgr.getConnection();
 		String pkValue = null;
 		List<String> insertPks = new ArrayList<String>();
 		try {
-//			if(pst==null){
-//			}
 			targetConn.setAutoCommit(false);
 			srcConn.setAutoCommit(false);
 			pst = targetConn.prepareStatement(insertSql);
@@ -215,7 +229,8 @@ public class ETLInsertTask extends AbstractETLTask{
 				pst =setValues(pst, colName, colType, value, ignoreCols);  //设置列值
 			}
 			pst.execute();
-			srcConn = delTemp(pkName, insertPks, tablePrefix+tableName, srcConn, NEW); //删除出本次操作临时表数据
+			System.out.println("insert 1 record");
+			srcConn = delTemp(pkName, insertPks, tablePrefix+tableName, srcConn, NEW, false); //删除出本次操作临时表数据
 			targetConn.commit();
 			srcConn.commit();
 		} catch (SQLException e) {

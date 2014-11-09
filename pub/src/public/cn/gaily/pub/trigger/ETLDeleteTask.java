@@ -63,7 +63,7 @@ public class ETLDeleteTask extends AbstractETLTask{
 		}
 		delSb.deleteCharAt(delSb.length()-1);
 		delSb.append(")");
-		
+		System.out.println(delSb);
 		try {
 			tarConn.setAutoCommit(false);
 			srcConn.setAutoCommit(false);
@@ -78,7 +78,8 @@ public class ETLDeleteTask extends AbstractETLTask{
 			}
 			
 			int count = pst.executeUpdate();
-			srcConn = delTemp(pkName, insertPks, tablePrefix+tableName, srcConn, DELETE);
+			System.out.println("DELETE" + count +" record");
+			srcConn = delTemp(pkName, insertPks, tablePrefix+tableName, srcConn, DELETE, true);
 			
 			tarConn.commit();
 			srcConn.commit();
@@ -145,7 +146,7 @@ public class ETLDeleteTask extends AbstractETLTask{
 		delSb.append(tableName);
 		delSb.append(" WHERE ").append(pkName).append("=?");
 		colIndexMap.put(pkName, 1);
-		
+		System.out.println(delSb);
 		List<String> insertPks = new ArrayList<String>(); 
 		insertPks.add(pkValue);
 		try {
@@ -160,7 +161,8 @@ public class ETLDeleteTask extends AbstractETLTask{
 			}
 			pst = setValues(pst, pkName, colType, pkValue, null);
 			int i= pst.executeUpdate();
-			srcConn = delTemp(pkName, insertPks, tablePrefix+tableName, srcConn,DELETE);
+			System.out.println("DELETE" + i +" record");
+			srcConn = delTemp(pkName, insertPks, tablePrefix+tableName, srcConn,DELETE, false);
 			
 			tarConn.commit();
 			srcConn.commit();

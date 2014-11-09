@@ -64,7 +64,7 @@ public class ETLUpdateTask extends AbstractETLTask{
 		sb.deleteCharAt(sb.length()-1);
 		
 		sb.append(" WHERE ").append(pkName).append("=?");
-		
+		System.out.println(sb);
 		List<String> insertPks = new ArrayList<String>(); 
 		
 		Connection targetConn = tarMgr.getConnection();
@@ -98,7 +98,8 @@ public class ETLUpdateTask extends AbstractETLTask{
 				ipst.clearParameters();
 			}
 			ipst.executeBatch();
-			srcConn = delTemp(pkName, insertPks, tablePrefix+tableName, srcConn, UPDATE); //删除出本次操作临时表数据
+			System.out.println("UPDATE" + valueList.size()+" record");
+			srcConn = delTemp(pkName, insertPks, tablePrefix+tableName, srcConn, UPDATE, true); //删除出本次操作临时表数据
 			targetConn.commit();
 			srcConn.commit();
 		}catch (SQLException e) {
@@ -170,7 +171,7 @@ public class ETLUpdateTask extends AbstractETLTask{
 			throw new RuntimeException("更新数据未获取到主键");
 		}
 		sb.append(" WHERE ").append(pkName).append("='").append(pkValue).append("'");
-		
+		System.out.println(sb);
 		List<String> insertPks = new ArrayList<String>();
 		insertPks.add(pkValue);
 		Connection targetConn = tarMgr.getConnection();
@@ -190,7 +191,8 @@ public class ETLUpdateTask extends AbstractETLTask{
 				ipst =setValues(ipst, colName, colType, value, ignoreCols);  //设置列值
 			}
 			ipst.execute();
-			srcConn = delTemp(pkName, insertPks, tablePrefix+tableName, srcConn, UPDATE); //删除出本次操作临时表数据
+			System.out.println("UPDATE 1 record");
+			srcConn = delTemp(pkName, insertPks, tablePrefix+tableName, srcConn, UPDATE, false); //删除出本次操作临时表数据
 			targetConn.commit();
 			srcConn.commit();
 		} catch (SQLException e) {
