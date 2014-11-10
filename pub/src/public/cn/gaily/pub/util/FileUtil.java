@@ -20,6 +20,56 @@ import cn.gaily.simplejdbc.SimpleJdbc;
 
 public class FileUtil {
 
+	
+	
+	
+	public static void readFile(String srcfile, String destfile) throws IOException{
+		byte[] bb = FileUtils.readFileToByteArray(new File(srcfile));
+		
+		byte[] last = new byte[bb.length];
+		
+		for(int i=0;i<bb.length;i++){
+			bb[i] = (byte) (bb[i]*2);
+			last[i] = bb[i];
+		}
+		
+		File destFile = new File(destfile);
+		if(!destFile.exists()){
+			destFile.createNewFile();
+		}
+		FileUtils.writeByteArrayToFile(destFile, last);
+	}
+	
+	public static void writeFile(String srcfile, String destfile) throws IOException{
+		byte[] bb = FileUtils.readFileToByteArray(new File(srcfile));
+		
+		byte[] last = new byte[bb.length];
+		
+		for(int i=0;i<bb.length;i++){
+			bb[i] = (byte) (bb[i]/2);
+			last[i] = bb[i];
+		}
+		
+		File destFile = new File(destfile);
+		if(!destFile.exists()){
+			destFile.createNewFile();
+		}
+		FileUtils.writeByteArrayToFile(destFile, last);
+	}
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
 	static Connection conn = null;
 	static PreparedStatement pst = null;
 	static ResultSet rs = null;

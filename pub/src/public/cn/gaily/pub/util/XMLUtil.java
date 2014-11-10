@@ -1,18 +1,24 @@
 package cn.gaily.pub.util;
 
+import java.io.BufferedOutputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.OutputStreamWriter;
 import java.io.UnsupportedEncodingException;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
+
 import org.apache.commons.beanutils.PropertyUtils;
 import org.apache.commons.vfs.FileObject;
 import org.dom4j.Document;
@@ -21,6 +27,7 @@ import org.dom4j.Element;
 import org.dom4j.io.OutputFormat;
 import org.dom4j.io.XMLWriter;
 import org.xml.sax.helpers.DefaultHandler;
+
 import common.Logger;
 
 /**
@@ -58,6 +65,8 @@ import common.Logger;
  */
 public class XMLUtil {
 	private static Logger log = Logger.getLogger(XMLUtil.class);
+
+	public static final String defaultCharset = "UTF-8";
 	
 	public static final OutputFormat PRETTY_PRINT_FORMAT = OutputFormat.createPrettyPrint();
 	public static final OutputFormat COMPACT_FORMAT = OutputFormat.createCompactFormat();
@@ -131,7 +140,7 @@ public class XMLUtil {
 		Element propertyElement = DocumentHelper.createElement(PROPERTY);
 		Object value ="";
 		try {
-			value = PropertyUtils.getProperty(bean,property);
+			value = PropertyUtils.getProperty(bean, property);
 		} catch (Exception e1) {
 			log.error("调用PropertyUtils.getProperty时出错["+property+"]",e1);
 		}
@@ -146,24 +155,41 @@ public class XMLUtil {
 		return propertyElement;
 	}
 	
+	
+	
 	public static boolean writeXML(String file,Document xmlDoc,OutputFormat format){
+		return writeXML(file, xmlDoc, format, null);
+	}
+	
+	public static boolean writeXML(String file,Document xmlDoc,OutputFormat format, String charsetName){
+		if(charsetName==null||"".equals(charsetName.trim())){
+			charsetName= "defaultCharset";
+		}
 		FileOutputStream output = null;
-		try {
+		File f = new File(file);
+		try{
+			if(!f.exists()){
+				f.createNewFile();
+			}
 			output = new FileOutputStream(file);
 		} catch (FileNotFoundException e) {
 			log.error(file+"文件不存在:", e);
+		} catch (IOException e) {
+			log.error(file+"创建文件出错:", e);
 		}
-		return writeXML(output, xmlDoc, format);
+		return writeXML(output, xmlDoc, format, charsetName);
 	}
 	
 	
-	public static boolean writeXML(OutputStream output,Document xmlDoc,OutputFormat format){
+	private static boolean writeXML(OutputStream output,Document xmlDoc,OutputFormat format, String charsetName){
 		log.info("writeXML......");
-		OutputFormat prettyFormat = OutputFormat.createPrettyPrint();
+		if(format==null){
+			format = OutputFormat.createPrettyPrint();
+		}
 		XMLWriter writer = null;
 		boolean success = true;
 		try {
-			writer = new XMLWriter(output,prettyFormat);
+			writer = new XMLWriter(new OutputStreamWriter(output, charsetName),format);
 			writer.write(xmlDoc);
 			writer.flush();
 		} catch (UnsupportedEncodingException e) {

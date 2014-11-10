@@ -58,7 +58,7 @@ public abstract class AbstractETLTask {
 	/**
 	 * 批量查询大小
 	 */
-	public final int batchSize = 2048;
+	public final int batchSize = 5;
 	
 	/**
 	 * 触发器管理表
@@ -577,6 +577,10 @@ public abstract class AbstractETLTask {
 		}
 		
 		int delSize = 500;
+		
+		if(delSize>batchSize){
+			delSize = batchSize;
+		}
 		
 		StringBuilder sb = null;
 		String value = null;

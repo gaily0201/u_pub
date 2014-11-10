@@ -89,7 +89,12 @@ public class ETLUpdateTask extends AbstractETLTask{
 					Object value = valueMap.get(colName);
 					if(colName.equals(pkName)){
 						insertPks.add((String)value);   //TODO 可能主键字段数据不是String类型
+						if(value==null){  //fix ORA-01407: 无法更新 ("UAP63_TEST"."CRPAS_GAJ_AJXX_SACW_B"."PK_GAJ_AJXX_H") 为 NULL
+							ipst.clearParameters(); 
+							break;
+						}
 					}
+					
 					List<String> ignoreCols = Arrays.asList(new String[]{"ETLSTATUS","ETLPKNAME","ETLTS"});
 					ipst = setValues(ipst, colName, colType, value, ignoreCols);  //设置列值
 				}
