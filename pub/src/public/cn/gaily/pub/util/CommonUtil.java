@@ -4,6 +4,9 @@ import java.awt.image.BufferedImage;
 import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -16,6 +19,7 @@ import java.util.Date;
 import java.util.Enumeration;
 import java.util.List;
 import java.util.Properties;
+import java.util.UUID;
 
 import javax.imageio.ImageIO;
 import javax.swing.ImageIcon;
@@ -35,7 +39,18 @@ import com.sun.image.codec.jpeg.JPEGImageEncoder;
  * @since 2014-9-14
  */
 public class CommonUtil {
-
+	
+	/**
+	 * UAP_数据转换配置文件保存位置
+	 */
+	public static final String  UAP_ETL_DB_CONFIG_PATH = System.getProperty("user.dir")+File.separator+"ierp"+File.separator+"bin"+File.separator;
+	/**
+	 * WEB_数据转换配置文件保存位置
+	 */
+	public static final String  WEB_ETL_DB_CONFIG_PATH = System.getProperty("user.dir")+File.separator;
+	
+	public static final String ETL_DB_CONFIG_NAME = "etl_config.properties";
+	
 	public static final String 	DATE_FORMATER_YYYY      = "yyyy";
 	public static final String 	DATE_FORMATER_YYYYMM    = "yyyyMM";
 	public static final String 	DATE_FORMATER_YYYYMMDD  = "yyyyMMdd" ; 
@@ -43,6 +58,7 @@ public class CommonUtil {
 	public static final String 	DATE_FORMATER_YYYY_MM_DD_1  = "yyyy/MM/dd" ; 
 	public static final String 	DATE_FORMATER_YYYY_MM_DD_TIME  = "yyyy-MM-dd HH:mm:ss" ; 
 	public static final String 	DATE_FORMATER_YYYY_MM_DD_TIME_1  = "yyyy/MM/dd HH:mm:ss" ; 
+
 	/**
    	* 年份校验??19XX/20XX
    	*/
@@ -363,7 +379,18 @@ public class CommonUtil {
 	public String getProperty(String key){
 		Properties prop = null;
 		if(in==null){
-			in = CommonUtil.class.getResourceAsStream(propFilepath);
+//			in = CommonUtils.class.getResourceAsStream(propFilepath);
+			try {
+				in = new FileInputStream(propFilepath);
+			} catch (FileNotFoundException e1) {
+				e1.printStackTrace();
+				try {
+					new File(propFilepath).createNewFile();
+					in = new FileInputStream(propFilepath);
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+			}
 			prop = new Properties();
 			try {
 				prop.load(in);
@@ -387,8 +414,12 @@ public class CommonUtil {
 		FileOutputStream fos = null;
 		if(in==null){
 			prop = new Properties();
-			in = CommonUtil.class.getResourceAsStream(propFilepath);
-			String path = CommonUtil.class.getResource(propFilepath).getPath();
+			try {
+				in = new FileInputStream(propFilepath);
+			} catch (FileNotFoundException e1) {
+				e1.printStackTrace();
+			}
+			String path = propFilepath;
 			try {
 				fos = new FileOutputStream(path, true);
 				prop.load(in);
@@ -422,8 +453,41 @@ public class CommonUtil {
 		
 	}
 	
-	public void setPropFilepath(String propFilepath) {
-		this.propFilepath = propFilepath;
+	/**
+	 * <p>方法名称：setPropFilepath</p>
+	 * <p>方法描述：设置ETL属性配置文件</p>
+	 * @param type  1.uap存放位置  2.web存放位置
+	 * @author xiaoh
+	 * @since  2014-11-17
+	 * <p> history 2014-11-17 xiaoh  创建   <p>
+	 */
+	public void setPropFilepath(int type) {
+		if(type==1){
+			this.propFilepath = UAP_ETL_DB_CONFIG_PATH+ETL_DB_CONFIG_NAME;
+		}else if(type==2){
+			this.propFilepath = WEB_ETL_DB_CONFIG_PATH+ETL_DB_CONFIG_NAME;
+		}
+		File f =new File(this.propFilepath);
+		if(!f.exists()){
+			try {
+				f.createNewFile();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
+	}
+	
+	public static List<String> generatePKs(int count){
+		List<String> pks = new ArrayList<String>();
+		String uuid = null;
+		String prefix = "1001ZZ";
+		for(int i=0;i<count;i++){
+			uuid = prefix + UUID.randomUUID().toString().toUpperCase().replaceAll("-", "").substring(0, 14);
+			if(!pks.contains(uuid)){
+				pks.add(uuid);
+			}
+		}
+		return pks;
 	}
 	
 }

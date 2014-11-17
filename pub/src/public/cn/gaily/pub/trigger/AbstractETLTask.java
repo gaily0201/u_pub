@@ -23,6 +23,7 @@ import cn.gaily.simplejdbc.SimpleDSMgr;
 import cn.gaily.simplejdbc.SimpleJdbc;
 
 
+
 /**
  * <p>Title: TriggerBaseTask</P>
  * <p>Description: 同步数据库增、删、改执行基础类</p>
@@ -288,17 +289,17 @@ public abstract class AbstractETLTask {
 				ipst.setFloat(colIndexMap.get(colName), Float.valueOf((String) value));
 			}
 			 else if("NUMBER".equals(colType)){
-				 if(((String)value).contains(".")){
-					 ipst.setDouble(colIndexMap.get(colName), Double.valueOf((String) value));
+				 if((String.valueOf(value)).contains(".")){
+					 ipst.setDouble(colIndexMap.get(colName), Double.valueOf((String.valueOf(value))));
 				 }else{
-					 ipst.setInt(colIndexMap.get(colName), Integer.valueOf((String)value));
+					 ipst.setInt(colIndexMap.get(colName), Integer.valueOf(String.valueOf(value)));
 				 }
 				 
 			}else if("CLOB".equals(colType)){
 				ipst.setClob(colIndexMap.get(colName), ((Clob)value).getCharacterStream(), ((Clob)value).length());
 			}else if("BLOB".equals(colType)){
 				Blob b = (Blob) value;
-				ipst.setBlob(colIndexMap.get(colName), b.getBinaryStream(), b.length());
+				ipst.setBlob(colIndexMap.get(colName), b);
 			}
 	//		else if("TIMESTAMP(6)".equals(colType)){
 	//			String timevalue = ((String) value).substring(0, 10);
@@ -395,24 +396,24 @@ public abstract class AbstractETLTask {
 			st  = srcConn.createStatement();
 			rs 	= st.executeQuery(querySrcSb.toString());
 			String colName = null;
-			String value = null;
+			Object value = null;
 			while(rs.next()){
 				valueMap= new HashMap<String,Object>();
 				for(Iterator it=colNameTypeMap.entrySet().iterator();it.hasNext();){
 					colName = ((Entry<String,String>)it.next()).getKey();
-					value = rs.getString(colName);
+					value = rs.getObject(colName);
 					if("ETLSTATUS".equals(colName)){
 						if(status==null){
-							status=value;
+							status=(String) value;
 						}else if(!status.equals(value)){
 							canBatch = false;
-							status=value;
+							status=(String) value;
 						}else{
-							status = value;
+							status = (String) value;
 						}
 					}
 					if(CommonUtil.isEmpty(pkName)&&"ETLPKNAME".equals(colName)){
-						pkName = value;
+						pkName = (String) value;
 					}
 					valueMap.put(colName,value);
 				}
