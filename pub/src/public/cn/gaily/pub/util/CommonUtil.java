@@ -24,6 +24,7 @@ import java.util.UUID;
 import javax.imageio.ImageIO;
 import javax.swing.ImageIcon;
 
+import nc.bs.framework.common.RuntimeEnv;
 import nc.bs.logging.Logger;
 
 import com.sun.image.codec.jpeg.JPEGCodec;
@@ -43,7 +44,7 @@ public class CommonUtil {
 	/**
 	 * UAP_数据转换配置文件保存位置
 	 */
-	public static final String  UAP_ETL_DB_CONFIG_PATH = System.getProperty("user.dir")+File.separator+"ierp"+File.separator+"bin"+File.separator;
+	public static final String  UAP_ETL_DB_CONFIG_PATH = RuntimeEnv.getInstance().getNCHome()+File.separator+"ierp"+File.separator+"bin"+File.separator;
 	/**
 	 * WEB_数据转换配置文件保存位置
 	 */

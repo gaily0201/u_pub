@@ -109,8 +109,8 @@ public class TriggerGenerator {
 			rs = pst.executeQuery();
 			st = conn.createStatement();
 			if(rs.next()&&"1".equals(rs.getString(1))){
-				return true;  //fix 临时表存在,可能含有数据,不删除直接返回
-//				st.executeUpdate("DROP TABLE XFL_"+tableName.toUpperCase().trim());
+//				return true;  //fix 临时表存在,可能含有数据,不删除直接返回
+				st.executeUpdate("DROP TABLE XFL_"+tableName.toUpperCase().trim());
 			}
 			st.executeUpdate("CREATE TABLE XFL_"+tableName+" AS SELECT * FROM "+tableName+" WHERE 1=0");
 			st.executeUpdate("ALTER TABLE XFL_"+tableName+" ADD ETLSTATUS CHAR(1)");
