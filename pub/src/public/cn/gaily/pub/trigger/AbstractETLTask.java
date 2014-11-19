@@ -1,5 +1,6 @@
 package cn.gaily.pub.trigger;
 
+import java.io.ByteArrayInputStream;
 import java.sql.Blob;
 import java.sql.Clob;
 import java.sql.Connection;
@@ -269,6 +270,7 @@ public abstract class AbstractETLTask {
 		if(ignoreCols!=null&&ignoreCols.contains(colName)){
 			return ipst;
 		}
+		ByteArrayInputStream bis = null;
 		try{
 			if(value==null){
 				 ipst.setNull(colIndexMap.get(colName), 0);
@@ -299,7 +301,8 @@ public abstract class AbstractETLTask {
 				ipst.setClob(colIndexMap.get(colName), ((Clob)value).getCharacterStream(), ((Clob)value).length());
 			}else if("BLOB".equals(colType)){
 				Blob b = (Blob) value;
-				ipst.setBlob(colIndexMap.get(colName), b);
+				bis = new ByteArrayInputStream(b.getBytes(1L, (int)b.length()));
+				ipst.setBinaryStream(colIndexMap.get(colName), bis, bis.available());
 			}
 	//		else if("TIMESTAMP(6)".equals(colType)){
 	//			String timevalue = ((String) value).substring(0, 10);
