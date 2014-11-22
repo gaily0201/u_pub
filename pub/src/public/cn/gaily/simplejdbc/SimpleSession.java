@@ -4,6 +4,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 
 import cn.gaily.pub.util.CommonUtil;
 
@@ -15,7 +16,7 @@ import cn.gaily.pub.util.CommonUtil;
  * @version 1.0
  * @since 2014-10-31
  */
-public class SimpleChecker {
+public class SimpleSession {
 
 	/**
 	 * <p>方法名称：checkTableExist</p>
@@ -149,6 +150,33 @@ public class SimpleChecker {
 			SimpleJdbc.release(conn, pst, rs);
 		}
 		return false;
+	}
+	
+	/**
+	 * <p>方法名称：executeSql</p>
+	 * <p>方法描述：执行sql</p>
+	 * @param mgr
+	 * @param sql
+	 * @author xiaoh
+	 * @since  2014-11-22
+	 * <p> history 2014-11-22 xiaoh  创建   <p>
+	 */
+	public static void executeSql(SimpleDSMgr mgr, String sql) {
+		if(mgr==null||CommonUtil.isEmpty(sql)||mgr.conns.size()<=0){
+			return;
+		}
+		
+		Connection conn = mgr.getConnection();
+		Statement st = null;
+		try {
+			st = conn.createStatement();
+			st.executeUpdate(sql);
+		} catch (SQLException e) {
+			e.printStackTrace();
+		} finally{
+			SimpleJdbc.release(null, st, null);
+			mgr.release(conn);
+		}
 	}
 	
 	

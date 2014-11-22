@@ -10,7 +10,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import cn.gaily.pub.util.CommonUtil;
-import cn.gaily.simplejdbc.SimpleChecker;
+import cn.gaily.simplejdbc.SimpleSession;
 import cn.gaily.simplejdbc.SimpleDSMgr;
 import cn.gaily.simplejdbc.SimpleJdbc;
 
@@ -54,12 +54,29 @@ public class ETLSynTask {
 		AbstractETLTask task = DefaultETLTask.getInstance();
 		task.execute(src, dest, tableName);  //TODO 修改status为1;修改查询临时表ETL_前缀 ...
 		
+		dropTemTab(src);
 	}
 	
 	
 	
 	
-	
+	/**
+	 * <p>方法名称：dropTemTab</p>
+	 * <p>方法描述：删除临时表</p>
+	 * @param src
+	 * @author xiaoh
+	 * @since  2014-11-22
+	 * <p> history 2014-11-22 xiaoh  创建   <p>
+	 */
+	private void dropTemTab(SimpleDSMgr src) {
+		String sql ="DROP TABLE "+ tempTabName;
+		SimpleSession.executeSql(src, sql);
+	}
+
+
+
+
+
 	/**
 	 * <p>方法名称：synTempPk</p>
 	 * <p>方法描述：将目标数据库同表主键与临时表主键比较，将存在的主键从临时表删除</p>
@@ -144,7 +161,7 @@ public class ETLSynTask {
 		
 		String value = null;
 		
-		int count = SimpleChecker.getRecordCount(src, tableName);
+		int count = SimpleSession.getRecordCount(src, tableName);
 		if(count<=0){
 			return;
 		}
@@ -233,7 +250,7 @@ public class ETLSynTask {
 	 * <p> history 2014-11-22 xiaoh  创建   <p>
 	 */
 	private void buildTempTab(SimpleDSMgr ds){
-		boolean has = SimpleChecker.checkHasTable(ds, tempTabName);
+		boolean has = SimpleSession.checkHasTable(ds, tempTabName);
 		String dsql = "DROP TABLE "+tempTabName;
 		String sql = "CREATE TABLE "+tempTabName+"(PKVALUE VARCHAR2(50), TABLENAME VARCHAR2(30), PKNAME VARCHAR2(50))";
 		String pkvsql = "CREATE INDEX IDX_V ON "+tempTabName+"(PKVALUE)";
