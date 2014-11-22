@@ -88,6 +88,35 @@ public class SimpleChecker {
 		return false;
 	}
 	
+	public static int getRecordCount(SimpleDSMgr mgr, String tableName){
+		if(mgr==null||mgr.conns.size()<=0){
+			throw new RuntimeException("校验表是否存在时传入的连接不存在");
+		}
+		return getRecordCount(mgr.getConnection(), tableName);
+	}
+	
+	public static int getRecordCount(Connection conn,String tableName){
+		if(CommonUtil.isEmpty(tableName)){
+			throw new RuntimeException("校验表是否存在时传入表名无效");
+		}
+		String sql = "SELECT COUNT(1) FROM "+tableName;
+		PreparedStatement pst = null;
+		ResultSet rs = null;
+		try {
+			pst = conn.prepareStatement(sql);
+			pst.setString(1, tableName.toUpperCase().trim());
+			rs = pst.executeQuery();
+			if(rs.next() && 1==rs.getInt(1)){
+				return rs.getInt(1);
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+			throw new RuntimeException("校验表是否存在时查询数据出错");
+		}finally{
+			SimpleJdbc.release(conn, pst, rs);
+		}
+		return 0;
+	}
 	
 	/**
 	 * <p>方法名称：checkHasTable</p>
