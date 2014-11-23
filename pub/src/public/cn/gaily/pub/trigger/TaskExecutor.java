@@ -37,7 +37,7 @@ public class TaskExecutor {
 	 * @since  2014-11-5
 	 * <p> history 2014-11-5 xiaoh  ´´½¨   <p>
 	 */
-	public void execute(SimpleDSMgr srcMgr, SimpleDSMgr destMgr){
+	public boolean execute(SimpleDSMgr srcMgr, SimpleDSMgr destMgr){
 		List<String> srcTableNames = getAllTables(srcMgr);
 		List<String> destTableNames = getAllTables(destMgr);
 		
@@ -53,6 +53,7 @@ public class TaskExecutor {
 				task.execute(destMgr, srcMgr, tableName);
 			}
 		}
+		return true;
 	}
 	
 	/**

@@ -135,7 +135,7 @@ public class FieldUpdater {
 	 */
 	private static List<String> query(String keyword, QueryParser parser,String[] resultField){
 		results = new ArrayList<String>();
-		if(keyword==null||CommonUtil.isEmpty(keyword)){
+		if(keyword==null||CommonUtils.isEmpty(keyword)){
 			return null;
 		}
 		Vector<String> vector = null;
@@ -146,7 +146,7 @@ public class FieldUpdater {
 			directory  = new SimpleFSDirectory(path);
 			IndexReader reader = DirectoryReader.open(directory);
 			IndexSearcher searcher  =new IndexSearcher(reader);
-			if(CommonUtil.isNotEmpty(keyword)){
+			if(CommonUtils.isNotEmpty(keyword)){
 				if(keyword.contains("/")){
 					return null;
 				}
@@ -266,7 +266,7 @@ public class FieldUpdater {
 			while(rs!=null && rs.next()){
 				doc = new Document();
 				for(int i=1;i<queryList.size()+1;i++){
-					if(rs.getString(i)==null||CommonUtil.isEmpty(rs.getString(i))){
+					if(rs.getString(i)==null||CommonUtils.isEmpty(rs.getString(i))){
 						continue;
 					}
 					Field field = new  TextField(queryList.get(i-1), rs.getString(i), Store.YES);
@@ -326,7 +326,7 @@ public class FieldUpdater {
 		StringBuilder sql = new StringBuilder("SELECT ");
 		conn = SimpleJdbc.getConnection(ds.getnUserName(), ds.getnPassword(),ds.getnIp(), ds.getnName());
 		//validFileds
-		if(fields!=null && fields.length>0 && CommonUtil.isNotEmpty(tableName)){
+		if(fields!=null && fields.length>0 && CommonUtils.isNotEmpty(tableName)){
 			getColList(conn, tableName);
 			for(int i=0;i<fields.length;i++){
 				if(!colList.contains(fields[i].trim().toUpperCase())){
@@ -341,7 +341,7 @@ public class FieldUpdater {
 		}
 		sql.delete(sql.length()-1, sql.length());
 		sql.append(" FROM "+tableName);
-		if(CommonUtil.isNotEmpty(wherePart)){
+		if(CommonUtils.isNotEmpty(wherePart)){
 			sql.append(" ").append(wherePart);
 		}
 		
@@ -371,7 +371,7 @@ public class FieldUpdater {
 		StringBuilder sql = new StringBuilder("SELECT ");
 		conn = SimpleJdbc.getConnection(DB_USERNAME, DB_PASSWORD);
 		//validFileds
-		if(fields!=null && fields.length>0 && CommonUtil.isNotEmpty(tableName)){
+		if(fields!=null && fields.length>0 && CommonUtils.isNotEmpty(tableName)){
 			getColList(conn, tableName);
 			for(int i=0;i<fields.length;i++){
 				if(!colList.contains(fields[i].trim().toUpperCase())){
@@ -386,7 +386,7 @@ public class FieldUpdater {
 		}
 		sql.delete(sql.length()-1, sql.length());
 		sql.append(" FROM "+tableName);
-		if(CommonUtil.isNotEmpty(wherePart)){
+		if(CommonUtils.isNotEmpty(wherePart)){
 			sql.append(" ").append(wherePart);
 		}
 		
@@ -415,7 +415,7 @@ public class FieldUpdater {
 				String name = "";
 				while(rs.next()){
 					name = rs.getString(1);
-					if(CommonUtil.isNotEmpty(name)){
+					if(CommonUtils.isNotEmpty(name)){
 						colList.add(name.trim().toUpperCase());
 					}
 				}

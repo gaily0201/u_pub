@@ -40,10 +40,10 @@ public class TestTriggerGenerator extends AbstractTestCase {
 	
 	
 	public static void createTrigger(){
-		Connection conn = SimpleJdbc.getConnection("uap63_test", "1", "192.168.1.100", "orcl", "1521");
-		TriggerGenerator generator = new TriggerGenerator();
-		generator.setconn(conn);
-		generator.generate("CRPAS_BAOBU_h", null, true);
+//		Connection conn = SimpleJdbc.getConnection("uap63_test", "1", "192.168.1.100", "orcl", "1521");
+//		TriggerGenerator generator = new TriggerGenerator();
+//		generator.setconn(conn);
+//		generator.generate("CRPAS_BAOBU_h", null, true);
 	}
 	
 }

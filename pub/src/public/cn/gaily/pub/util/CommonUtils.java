@@ -24,7 +24,6 @@ import java.util.UUID;
 import javax.imageio.ImageIO;
 import javax.swing.ImageIcon;
 
-import nc.bs.framework.common.RuntimeEnv;
 import nc.bs.logging.Logger;
 
 import com.sun.image.codec.jpeg.JPEGCodec;
@@ -32,23 +31,23 @@ import com.sun.image.codec.jpeg.JPEGEncodeParam;
 import com.sun.image.codec.jpeg.JPEGImageEncoder;
 
 /**
- * <p>Title: CommonUtil</P>
+ * <p>Title: CommonUtils</P>
  * <p>Description: 基础的工具类</p>
  * <p>Copyright: 用友政务软件有限公司 Copyright (c) 2014</p>
  * @author xiaoh
  * @version 1.0
  * @since 2014-9-14
  */
-public class CommonUtil {
+public class CommonUtils {
 	
 	/**
 	 * UAP_数据转换配置文件保存位置
 	 */
-	public static final String  UAP_ETL_DB_CONFIG_PATH = RuntimeEnv.getInstance().getNCHome()+File.separator+"ierp"+File.separator+"bin"+File.separator;
+	public static final String  UAP_ETL_DB_CONFIG_PATH = System.getProperty("user.home")+File.separator+"uap_ETL"+File.separator;
 	/**
 	 * WEB_数据转换配置文件保存位置
 	 */
-	public static final String  WEB_ETL_DB_CONFIG_PATH = System.getProperty("user.dir")+File.separator;
+	public static final String  WEB_ETL_DB_CONFIG_PATH = System.getProperty("user.home")+File.separator;
 	
 	public static final String ETL_DB_CONFIG_NAME = "etl_config.properties";
 	
@@ -114,7 +113,7 @@ public class CommonUtil {
 	/**
 	 * 配置文件详细路径
 	 */
-	public String propFilepath = "prop.properties";
+	public String propFilepath = UAP_ETL_DB_CONFIG_PATH + ETL_DB_CONFIG_NAME;
 	
 	/**
 	 * <p>方法名称：isValidFloat</p>
@@ -413,6 +412,7 @@ public class CommonUtil {
 	public void setProperty(String key,String value){
 		Properties prop = null;
 		FileOutputStream fos = null;
+		setPropFilepath(1);
 		if(in==null){
 			prop = new Properties();
 			try {
@@ -469,6 +469,9 @@ public class CommonUtil {
 			this.propFilepath = WEB_ETL_DB_CONFIG_PATH+ETL_DB_CONFIG_NAME;
 		}
 		File f =new File(this.propFilepath);
+		if(!f.getParentFile().exists()){
+			f.getParentFile().mkdirs();
+		}
 		if(!f.exists()){
 			try {
 				f.createNewFile();

@@ -1,5 +1,6 @@
 package cn.gaily.simplejdbc;
 
+import java.io.Serializable;
 import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.List;
@@ -13,7 +14,8 @@ import java.util.List;
  * @version 1.0
  * @since 2014-10-28
  */
-public class SimpleDSMgr{
+public class SimpleDSMgr implements Serializable{
+	private static final long serialVersionUID = 1949752490522906986L;
 
 	/**
 	 * 默认初始化连接池大小
@@ -61,8 +63,13 @@ public class SimpleDSMgr{
 	 * <p> history 2014-10-28 xiaoh  创建   <p>
 	 */
 	public Connection getConnection(){
-		if(conns.isEmpty()){
+		int i = 0;
+		while(conns.isEmpty()){
 			init();
+			i++;
+			if(i==10){
+				return null;
+			}
 		}
 		return conns.remove(0);
 	}
@@ -90,6 +97,14 @@ public class SimpleDSMgr{
 //				e.printStackTrace();
 //				throw new RuntimeException("设置手动提交失败");
 //			}
+		}
+	}
+	
+	public void realRelease(){
+		if(conns.size()>0){
+			for(Connection c:conns){
+				SimpleJdbc.release(c, null, null);
+			}
 		}
 	}
 	

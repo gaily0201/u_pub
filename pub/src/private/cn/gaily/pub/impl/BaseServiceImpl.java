@@ -13,7 +13,7 @@ import nc.jdbc.framework.generator.IdGenerator;
 import nc.jdbc.framework.processor.MapListProcessor;
 import nc.vo.pub.BusinessException;
 import cn.gaily.pub.itf.IBaseService;
-import cn.gaily.pub.util.CommonUtil;
+import cn.gaily.pub.util.CommonUtils;
 
 public class BaseServiceImpl implements IBaseService {
 
@@ -33,12 +33,12 @@ public class BaseServiceImpl implements IBaseService {
 	@Override
 	public List<String> generatePks(int count) {
 		String[] pks = generator.generate(count);
-		return CommonUtil.arrayToList(pks);
+		return CommonUtils.arrayToList(pks);
 	}
 	
 	@Override
 	public String getPkorgByName(String name, boolean needRefresh) throws BusinessException {
-		if(CommonUtil.isEmpty(name)){
+		if(CommonUtils.isEmpty(name)){
 			return null;
 		}
 		if(needRefresh==false&&!orgNamePkMap.isEmpty()){
@@ -55,7 +55,7 @@ public class BaseServiceImpl implements IBaseService {
 				map = list.get(i);
 				oname = (String) map.get("name");
 				pk_org = (String)map.get("pk_org");
-				if(CommonUtil.isNotEmpty(oname)&&CommonUtil.isNotEmpty(pk_org)){
+				if(CommonUtils.isNotEmpty(oname)&&CommonUtils.isNotEmpty(pk_org)){
 					orgNamePkMap.put(oname, pk_org);
 				}
 			}
@@ -81,7 +81,7 @@ public class BaseServiceImpl implements IBaseService {
 				map = list.get(i);
 				oname = (String) map.get("name");
 				pk_org = (String)map.get("pk_org");
-				if(CommonUtil.isNotEmpty(oname)&&CommonUtil.isNotEmpty(pk_org)){
+				if(CommonUtils.isNotEmpty(oname)&&CommonUtils.isNotEmpty(pk_org)){
 					returnMap.put(oname, pk_org);
 				}
 			}

@@ -5,7 +5,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-import cn.gaily.pub.util.CommonUtil;
+import cn.gaily.pub.util.CommonUtils;
 
 /**
  * <p>Title: SimpleChecker</P>
@@ -63,7 +63,7 @@ public class SimpleChecker {
 	 * <p> history 2014-10-31 xiaoh  创建   <p>
 	 */
 	public static boolean checkHasColumn(Connection conn, String tableName,String columnName){
-		if(CommonUtil.isEmpty(tableName)||CommonUtil.isEmpty(columnName)){
+		if(CommonUtils.isEmpty(tableName)||CommonUtils.isEmpty(columnName)){
 			throw new RuntimeException("校验列是否存时传入参数无效");
 		}
 		String sql = "SELECT COUNT(1) FROM USER_TAB_COLS  WHERE TABLE_NAME=? AND COLUMN_NAME=? ";
@@ -100,7 +100,7 @@ public class SimpleChecker {
 	 * <p> history 2014-10-31 xiaoh  创建   <p>
 	 */
 	public static boolean checkHasTable(Connection conn,String tableName){
-		if(CommonUtil.isEmpty(tableName)){
+		if(CommonUtils.isEmpty(tableName)){
 			throw new RuntimeException("校验表是否存在时传入表名无效");
 		}
 		String sql = "SELECT COUNT(1) FROM USER_TABLES WHERE TABLENAME=?";

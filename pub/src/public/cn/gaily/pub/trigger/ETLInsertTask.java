@@ -2,18 +2,18 @@ package cn.gaily.pub.trigger;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Set;
 import java.util.concurrent.ArrayBlockingQueue;
 
-import cn.gaily.pub.util.CommonUtil;
+import cn.gaily.pub.util.CommonUtils;
 import cn.gaily.simplejdbc.SimpleDSMgr;
 import cn.gaily.simplejdbc.SimpleJdbc;
 
@@ -50,19 +50,8 @@ public class ETLInsertTask extends AbstractETLTask{
 						ArrayBlockingQueue<Map<String, Object>> valueList,
 						Map<String, String> colNameTypeMap, Boolean canBatch) {
 		
-		//watch connections in datasource
-//			try {
-//					for(Connection conn:srcMgr.conns){
-//						System.out.println("srcMgr: "+ conn.getMetaData().getUserName().toString());
-//					}
-//					for(Connection conn:tarMgr.conns){
-//						System.out.println("tarMgr: "+ conn.getMetaData().getUserName().toString());
-//					}
-//			} catch (SQLException e) {
-//				e.printStackTrace();
-//			}
 		
-		if(srcMgr==null||tarMgr==null||CommonUtil.isEmpty(tableName)){
+		if(srcMgr==null||tarMgr==null||CommonUtils.isEmpty(tableName)){
 			throw new RuntimeException("新增数据库操作参数出错");
 		}
 		StringBuilder tarSb = new StringBuilder();
@@ -91,6 +80,8 @@ public class ETLInsertTask extends AbstractETLTask{
 		System.out.println(insertSql);
 		List<String> insertPks = new ArrayList<String>(); //保存插入的数据的pk值,便于删除使用
 		
+		List<String> tarPks = queryHasPks(tarMgr, tableName, pkName); //获取目标库中已经存在的pk，避免数据重复插入
+
 		PreparedStatement pst = null;
 		Connection targetConn = tarMgr.getConnection();
 		Connection srcConn = srcMgr.getConnection();
@@ -99,8 +90,13 @@ public class ETLInsertTask extends AbstractETLTask{
 			srcConn.setAutoCommit(false);
 			pst = targetConn.prepareStatement(insertSql);
 			Map<String, Object> valueMap = null;
+			String pkValue = null;
 			while(!valueList.isEmpty()){
 				valueMap = valueList.poll();
+				pkValue = (String) valueMap.get(pkName);
+				if(tarPks.contains(pkValue)){
+					continue;  //目标库中已经存在Pk值，不插入
+				}
 				for(Iterator it=colNameTypeMap.entrySet().iterator();it.hasNext();){
 					entry = (Entry<String, String>) it.next();
 					colName = entry.getKey();
@@ -144,6 +140,39 @@ public class ETLInsertTask extends AbstractETLTask{
 	
 
 	/**
+	 * <p>方法名称：queryHasPks</p>
+	 * <p>方法描述：查询目标库中存在的pk数据</p>
+	 * @param tarMgr  目标数据源
+	 * @param pkName  pk字段名
+	 * @param tableName  表名
+	 * @return
+	 * @author xiaoh
+	 * @since  2014-11-19
+	 * <p> history 2014-11-19 xiaoh  创建   <p>
+	 */
+	private List<String> queryHasPks(SimpleDSMgr tarMgr,String tableName, String pkName) {
+		Connection conn = tarMgr.getConnection();
+		String sql = "SELECT "+pkName+" FROM " +tableName;
+		Statement st = null;
+		ResultSet rs = null;
+		List<String> pks = new ArrayList<String>();
+		try {
+			st = conn.createStatement();
+			rs = st.executeQuery(sql);
+			String pk = null;
+			while(rs.next()){
+				pk = rs.getString(1);
+				if(CommonUtils.isNotEmpty(pk)){
+					pks.add(pk);
+				}
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		return pks;
+	}
+
+	/**
 	 * <p>方法名称：dealAdd</p>
 	 * <p>方法描述：处理新增数据</p>
 	 * @param tableName 表名
@@ -154,7 +183,7 @@ public class ETLInsertTask extends AbstractETLTask{
 	@Override
 	public void doexecute(SimpleDSMgr srcMgr, SimpleDSMgr tarMgr, String tableName, String pkName, Map<String,Object> valueMap, Map<String,String> colNameTypeMap){
 		
-		if(srcMgr==null||tarMgr==null||CommonUtil.isEmpty(tableName)){
+		if(srcMgr==null||tarMgr==null||CommonUtils.isEmpty(tableName)){
 			throw new RuntimeException("新增数据库操作参数出错");
 		}
 
@@ -178,7 +207,7 @@ public class ETLInsertTask extends AbstractETLTask{
 	 * <p> history 2014-10-29 xiaoh  创建   <p>
 	 */
 	private void doAddInsert(SimpleDSMgr srcMgr, SimpleDSMgr tarMgr, String tableName, Map<String,Object> valueMap,String pkName, Map<String,String> colNameTypeMap) {
-		if(tarMgr==null||CommonUtil.isEmpty(tableName)||valueMap.isEmpty()){
+		if(tarMgr==null||CommonUtils.isEmpty(tableName)||valueMap.isEmpty()){
 			return ;
 		}
 		StringBuilder tarSb = new StringBuilder();

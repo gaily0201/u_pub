@@ -19,7 +19,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.ArrayBlockingQueue;
 
-import cn.gaily.pub.util.CommonUtil;
+import cn.gaily.pub.util.CommonUtils;
 import cn.gaily.simplejdbc.SimpleDSMgr;
 import cn.gaily.simplejdbc.SimpleJdbc;
 
@@ -58,9 +58,14 @@ public abstract class AbstractETLTask {
 	public final int DISABLE = 0;
 	
 	/**
+	 * 默认批量提交大小
+	 */
+	private int DEFAULT_BATCHSIZE =500;
+
+	/**
 	 * 批量查询大小
 	 */
-	public final int batchSize = 5;
+	public int batchSize = DEFAULT_BATCHSIZE;
 	
 	/**
 	 * 触发器管理表
@@ -120,13 +125,13 @@ public abstract class AbstractETLTask {
 	 * <p> history 2014-10-29 xiaoh  创建   <p>
 	 */
 	public String execute(SimpleDSMgr srcMgr, SimpleDSMgr tarMgr, String tableName){
-		if(srcMgr==null||tarMgr==null||CommonUtil.isEmpty(tableName)){
+		if(srcMgr==null||tarMgr==null||CommonUtils.isEmpty(tableName)){
 			throw new RuntimeException("执行前数据预置参数出错");
 		}
 		
 		clear();
 		
-		enableTrigger(tarMgr, tableName, DISABLE);  //停用触发器 //TODO 存在问题：在执行期间，数据可能丢失
+		tarMgr = enableTrigger(tarMgr, tableName, DISABLE);  //停用触发器 //TODO 存在问题：在执行期间，数据可能丢失
 		
 		String pkName = null;
 		Boolean canBatch =  null;
@@ -137,12 +142,12 @@ public abstract class AbstractETLTask {
 			long start = System.currentTimeMillis();
 			
 			System.out.println(++round);
-			Map<String,Object> recvMap = queryTempData(tableName, srcMgr, batchSize, 0); //操作每张表的pk是唯一的
+			Map<String,Object> recvMap = queryTempData(tableName, srcMgr, 0); //操作每张表的pk是唯一的
 			canBatch = (Boolean) recvMap.get("canBatch");
 			pkName = (String) recvMap.get("pkName");
 			status = (String) recvMap.get("status");
 			
-			if(canBatch==null||CommonUtil.isEmpty(pkName)||CommonUtil.isEmpty(status)){
+			if(canBatch==null||CommonUtils.isEmpty(pkName)||CommonUtils.isEmpty(status)){
 				break;
 			}
 			
@@ -172,7 +177,7 @@ public abstract class AbstractETLTask {
 						break;
 					}
 					status = (String) map.get("ETLSTATUS");
-					if(CommonUtil.isEmpty(status)){
+					if(CommonUtils.isEmpty(status)){
 						continue;
 					}
 					
@@ -205,18 +210,6 @@ public abstract class AbstractETLTask {
 		}
 		
 		enableTrigger(tarMgr, tableName, ENABLE);  //恢复触发器
-		
-//		delTempData(srcMgr, tableName, null);
-		
-		//统一事务
-//		for(int i=0;i<srcMgr.conns.size();i++){
-//			try {
-//				srcMgr.conns.get(i).commit();
-//				tarMgr.conns.get(i).commit();
-//			} catch (SQLException e) {
-//				e.printStackTrace();
-//			}
-//		}
 		
 		return pkName;
 	}
@@ -279,7 +272,7 @@ public abstract class AbstractETLTask {
 			}else if("DATE".equals(colType)){
 				Date date = null;
 				try {
-					SimpleDateFormat sdf = new SimpleDateFormat(CommonUtil.DATE_FORMATER_YYYY_MM_DD_TIME);
+					SimpleDateFormat sdf = new SimpleDateFormat(CommonUtils.DATE_FORMATER_YYYY_MM_DD_TIME);
 					String v = String.valueOf(value).substring(0,19);
 					date = new Date(sdf.parse(v).getTime());  //TODO 丢时间
 				} catch (ParseException e) {
@@ -326,7 +319,7 @@ public abstract class AbstractETLTask {
 	 * <p> history 2014-10-29 xiaoh  创建   <p>
 	 */@Deprecated
 	public void delTempData(SimpleDSMgr srcMgr, String tableName, String pkName) {//TODO 不能清空，在操作的时候，表中的数据可能修改
-		if(srcMgr==null||CommonUtil.isEmpty(tableName)){
+		if(srcMgr==null||CommonUtils.isEmpty(tableName)){
 			return ;
 		}
 		Connection srcConn = srcMgr.getConnection();
@@ -358,7 +351,7 @@ public abstract class AbstractETLTask {
 	 * @since  2014-10-29
 	 * <p> history 2014-10-29 xiaoh  创建   <p>
 	 */
-	public Map<String,Object> queryTempData(String tableName,SimpleDSMgr srcMgr, int batchsize, int round) {
+	public Map<String,Object> queryTempData(String tableName,SimpleDSMgr srcMgr, int round) {
 		
 		Map<String,Object> returnMap = new HashMap<String,Object>();
 		
@@ -372,7 +365,7 @@ public abstract class AbstractETLTask {
 			colNameTypeMap = getTabCols(srcMgr, tableName);
 			colNameTypeCache.put(tableName, colNameTypeMap);
 		}
-		if(CommonUtil.isEmpty(tableName)||srcMgr==null){
+		if(CommonUtils.isEmpty(tableName)||srcMgr==null){
 			return null;
 		}
 		Map<String, Object> valueMap = null;
@@ -380,15 +373,13 @@ public abstract class AbstractETLTask {
 		Connection srcConn = srcMgr.getConnection();
 		
 		StringBuilder querySrcSb = new StringBuilder("SELECT ");
-
+		if(colNameTypeMap.isEmpty()){
+			return null;
+		}
 		for(Iterator it=colNameTypeMap.entrySet().iterator();it.hasNext();){
 			querySrcSb.append("").append(((Entry<String,String>)it.next()).getKey()).append(",");
 		}
 		querySrcSb.deleteCharAt(querySrcSb.length()-1);
-//		querySrcSb.append(" FROM( SELECT T.*, ROWNUM RN FROM( SELECT * FROM ").append(tablePrefix).append(tableName);
-//		querySrcSb.append(" ORDER BY ETLTS ASC) T WHERE ROWNUM<=").append(batchsize*(round+1)).append(") RESULT");
-//		querySrcSb.append(" WHERE RN>=").append(batchsize*round);
-//		querySrcSb.append(" ORDER BY RESULT.ETLTS ASC");
 		querySrcSb.append(" FROM ").append(tablePrefix).append(tableName).append(" WHERE ROWNUM<=").append(batchSize);
 		querySrcSb.append(" ORDER BY ETLTS ASC");
 		
@@ -415,22 +406,13 @@ public abstract class AbstractETLTask {
 							status = (String) value;
 						}
 					}
-					if(CommonUtil.isEmpty(pkName)&&"ETLPKNAME".equals(colName)){
+					if(CommonUtils.isEmpty(pkName)&&"ETLPKNAME".equals(colName)){
 						pkName = (String) value;
 					}
 					valueMap.put(colName,value);
 				}
 				valueList.put(valueMap);
 			}
-			//获取pk值
-//			Map<String,String> map = null;
-//			for(Iterator it= valueList.iterator();it.hasNext();){
-//				map = (Map<String,String>)it.next();
-//				if(CommonUtil.isEmpty(pkName)){
-//					pkName = (String)map.get("ETLPKNAME");
-//				}
-//				pkValues.add(map.get(pkName));
-//			}
 		} catch (SQLException e) {
 			e.printStackTrace();
 			throw new RuntimeException("查询数据出错"+e);
@@ -462,7 +444,7 @@ public abstract class AbstractETLTask {
 	 */
 	public Map<String,String> getTabCols(SimpleDSMgr mgr, String tableName){
 		
-		if(mgr==null||CommonUtil.isEmpty(tableName)){
+		if(mgr==null||CommonUtils.isEmpty(tableName)){
 			throw new RuntimeException("获取表列参数出错");
 		}
 		Connection conn = mgr.getConnection();
@@ -480,20 +462,26 @@ public abstract class AbstractETLTask {
 		ResultSet rs = null;
 		try {
 			pst = conn.prepareStatement(sql);
-			pst.setString(1, tablePrefix+tableName);
+			pst.setString(1, tableName);
 			rs = pst.executeQuery();
 			String colName = null;
 			String colType = null;
 			while(rs.next()){
 				colName = rs.getString(1);
 				colType = rs.getString(2);
-				if(CommonUtil.isNotEmpty(colName)){
+				if(CommonUtils.isNotEmpty(colName)){
 					result.put(colName, colType);
 				}
 				if("BLOB".equalsIgnoreCase(colType)||"CLOB".equalsIgnoreCase(colType)){
-					//TODO no batch
+					//TODO set batch size to 50
+					this.setBatchSize(50);
+				}else{
+					this.setBatchSize(DEFAULT_BATCHSIZE);
 				}
 			}
+			result.put("ETLTS", "VARCHAR2");
+			result.put("ETLSTATUS", "CHAR");
+			result.put("ETLPKNAME", "VARCHAR2");
 		} catch (SQLException e) {
 			e.printStackTrace();
 		} finally{
@@ -515,13 +503,14 @@ public abstract class AbstractETLTask {
 	 * @since  2014-10-28
 	 * <p> history 2014-10-28 xiaoh  创建   <p>
 	 */
-	public void enableTrigger(SimpleDSMgr mgr, String tableName, int type){
+	public SimpleDSMgr enableTrigger(SimpleDSMgr mgr, String tableName, int type){
 		
-		if(mgr==null||CommonUtil.isEmpty(tableName)||(type!=0&&type!=1)){
+		if(mgr==null||CommonUtils.isEmpty(tableName)||(type!=0&&type!=1)){
 			throw new RuntimeException("停启用触发器参数出错");
 		}
 		Connection conn = mgr.getConnection();
 		
+		ensureMgrTable(mgr,"XFL_TABSTATUS");
 		
 		String sql = null;
 		String sql1 = null;
@@ -534,17 +523,19 @@ public abstract class AbstractETLTask {
 		}
 		Statement st = null;
 		try {
+			conn.setAutoCommit(false);
 			st = conn.createStatement();
 			st.execute(sql);
 			st.execute(sql1);
+			conn.commit();
 		} catch (SQLException e) {
 			e.printStackTrace();
-			throw new RuntimeException("停用启用触发器出错"+e);
+//			throw new RuntimeException("停用启用触发器出错"+e);
 		}finally{
 			SimpleJdbc.release(null, st, null);
 			mgr.release(conn);
 		}
-		
+		return mgr;
 //		String sql = "UPDATE "+mgrTriggerTabName+" A SET A.STATUS=? WHERE TABLENAME=?";
 //		
 //		PreparedStatement pst = null;
@@ -573,7 +564,7 @@ public abstract class AbstractETLTask {
 	 * <p> history 2014-11-7 xiaoh  创建   <p>
 	 */
 	protected Connection delTemp(String pkName, List<String> insertPks, String tableName, Connection conn, int type, boolean batch) {
-		if(CommonUtil.isEmpty(pkName)||CommonUtil.isEmpty(tableName)||conn==null||(type!=1&&type!=2&&type!=3)){
+		if(CommonUtils.isEmpty(pkName)||CommonUtils.isEmpty(tableName)||conn==null||(type!=1&&type!=2&&type!=3)){
 			throw new RuntimeException("删除临时表数据传入参数不能为空");
 		}
 		if(insertPks.size()<=0){
@@ -602,7 +593,7 @@ public abstract class AbstractETLTask {
 				sb.append(" IN('");
 				for(int j=0;j<delSize&&insertPks.size()>0;j++){
 					value = insertPks.remove(0);
-					if(CommonUtil.isEmpty(value)){
+					if(CommonUtils.isEmpty(value)){
 						continue;
 					}else{
 						sb.append(value).append("','");
@@ -634,6 +625,45 @@ public abstract class AbstractETLTask {
 		}
 		return conn;
 	}
+	
+	private boolean ensureMgrTable(SimpleDSMgr mgr , String tableName){
+		if(mgr==null){
+			throw new RuntimeException("请添加数据源");
+		}
+		Connection conn = mgr.getConnection();
+		if(conn==null){
+			return false;
+		}
+		if(CommonUtils.isEmpty(tableName)){
+			throw new RuntimeException("请传入有效的表名");
+		}
+		String sql = "SELECT COUNT(1) FROM USER_TABLES WHERE TABLE_NAME=?";
+		Statement st = null;
+		PreparedStatement pst = null;
+		ResultSet rs = null;
+		try {
+			pst = conn.prepareStatement(sql);
+			pst.setString(1, tableName.toUpperCase().trim());
+			rs = pst.executeQuery();
+			st = conn.createStatement();
+			if(rs.next()&&"1".equals(rs.getString(1))){
+				return true;  //fix 临时表存在,可能含有数据,不删除直接返回
+			}
+			st.executeUpdate("CREATE TABLE "+tableName+"(TABLENAME VARCHAR2(30),STATUS CHAR(1))");
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}finally{
+			SimpleJdbc.release(null, pst, rs);
+			mgr.release(conn);
+		}
+		return false;
+	}
+	
+	
+	public void setBatchSize(int batchSize) {
+		this.batchSize = batchSize;
+	}
+	
 	
 	
 }

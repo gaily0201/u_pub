@@ -9,24 +9,24 @@ import cn.gaily.pub.util.FileUtil;
 public class TestFileUtil extends AbstractTestCase {
 
 	public void test(){
-		
-		try {
-			FileUtil.readFile("C:\\prop1.properties", "C:\\prop2.properties");
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-		
-		try {
-			FileUtil.writeFile("C:\\prop2.properties", "C:\\prop3.properties");
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-		
+//		
 //		try {
-//			FileUtil.changeCharcter("E:\\ws_uap\\crpas\\xtgl\\src\\public\\cn\\gaily\\pub\\trigger\\a", new String[]{"java"}, "GBK", "UTF-8");
+//			FileUtil.readFile("C:\\prop1.properties", "C:\\prop2.properties");
 //		} catch (IOException e) {
 //			e.printStackTrace();
 //		}
+//		
+//		try {
+//			FileUtil.writeFile("C:\\prop2.properties", "C:\\prop3.properties");
+//		} catch (IOException e) {
+//			e.printStackTrace();
+//		}
+		
+		try {
+			FileUtil.changeCharcter("C:\\Users\\ctt\\git\\u_pub\\pub\\src\\public\\cn\\gaily\\pub\\trigger", new String[]{"java"}, "UTF-8", "GBK");
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 //		try {
 //			FileUtil.saveBlobFile(new File("E:\\share\\法律文书\\公安文书"), "aj_flws_jcy", 0, 0);
 //			FileUtil.saveBlobFile(new File("E:\\share\\法律文书\\公安文书"), "aj_flws_sfj", 0, 0);

@@ -10,7 +10,7 @@ import nc.gaily.pub.vo.RelationInfo;
 import nc.ui.pubapp.uif2app.event.IAppEventHandler;
 import nc.ui.pubapp.uif2app.event.card.CardHeadTailAfterEditEvent;
 import cn.gaily.itf.IETLService;
-import cn.gaily.pub.util.CommonUtil;
+import cn.gaily.pub.util.CommonUtils;
 
 
 public class ETLHeadTailAfterEditHandle implements IAppEventHandler<CardHeadTailAfterEditEvent> {
@@ -42,7 +42,7 @@ public class ETLHeadTailAfterEditHandle implements IAppEventHandler<CardHeadTail
 		
 		String tableName = tableNameObj.toString();
 		String dataSourceName = dataSourceNameObj.toString();
-		if(CommonUtil.isEmpty(tableName)||CommonUtil.isEmpty(dataSourceName)){
+		if(CommonUtils.isEmpty(tableName)||CommonUtils.isEmpty(dataSourceName)){
 			return; //TODO µ¯³öÌáÊ¾
 		}
 		

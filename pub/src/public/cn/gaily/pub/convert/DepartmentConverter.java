@@ -9,7 +9,7 @@ import java.util.Map;
 import nc.bs.framework.common.NCLocator;
 import nc.vo.pub.BusinessException;
 import cn.gaily.pub.itf.IBaseService;
-import cn.gaily.pub.util.CommonUtil;
+import cn.gaily.pub.util.CommonUtils;
 import cn.gaily.pub.util.ExcelImporter;
 
 /**
@@ -59,13 +59,13 @@ public class DepartmentConverter {
 			}
 			source = rowValues[0];
 			target = rowValues[1];
-			if(CommonUtil.isEmpty(source)||CommonUtil.isEmpty(target)){
+			if(CommonUtils.isEmpty(source)||CommonUtils.isEmpty(target)){
 				continue;
 			}
 			
 			orgNameMap.put(source, target);
 			pk_org = namePkorgMap.get(target);
-			if(CommonUtil.isNotEmpty(pk_org)){
+			if(CommonUtils.isNotEmpty(pk_org)){
 				orgCodeMap.put(source, pk_org);
 			}
 		}

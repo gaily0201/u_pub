@@ -116,10 +116,10 @@ public class FileUtil {
 				fileName = rs.getString(2);
 				ajbh = rs.getString(3);
 				ajmc = rs.getString(4);
-				if(CommonUtil.isNotEmpty(ajmc)&&ajmc.contains("\"")){
+				if(CommonUtils.isNotEmpty(ajmc)&&ajmc.contains("\"")){
 					ajmc = ajmc.replace('\"', '_');
 				}
-				if(CommonUtil.isNotEmpty(ajmc)&&ajmc.contains("\\")){
+				if(CommonUtils.isNotEmpty(ajmc)&&ajmc.contains("\\")){
 					ajmc = ajmc.replace('\\', '_');
 				}
 				filePath = new File(path+File.separator+ajbh+"_"+ajmc);

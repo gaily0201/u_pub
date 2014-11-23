@@ -11,7 +11,7 @@ import nc.jdbc.framework.exception.DbException;
 import nc.jdbc.framework.processor.MapProcessor;
 import nc.vo.pub.BusinessException;
 import cn.gaily.pub.trigger.TaskExecutor;
-import cn.gaily.pub.util.CommonUtil;
+import cn.gaily.pub.util.CommonUtils;
 import cn.gaily.simplejdbc.SimpleDSMgr;
 
 public class ETLExchangeTimer implements IBackgroundWorkPlugin{
@@ -25,7 +25,7 @@ public class ETLExchangeTimer implements IBackgroundWorkPlugin{
 		int count  = 0;
 		
 		while(remote.conns.size()<=0||local.conns.size()<=0){
-			CommonUtil common = new CommonUtil();
+			CommonUtils common = new CommonUtils();
 			common.setPropFilepath(1);
 			String rdbname = common.getProperty("remote.dbname");
 			String rusername = common.getProperty("remote.username");
@@ -38,12 +38,12 @@ public class ETLExchangeTimer implements IBackgroundWorkPlugin{
 			String lport = common.getProperty("local.port");
 			String lip = common.getProperty("local.ip");
 			
-			if(CommonUtil.isNotEmpty(rdbname)&&CommonUtil.isNotEmpty(rusername)
-					&&CommonUtil.isNotEmpty(rpassword) &&CommonUtil.isNotEmpty(rport)
-					&&CommonUtil.isNotEmpty(rip)&&
-					CommonUtil.isNotEmpty(ldbname)&&CommonUtil.isNotEmpty(lusername)
-					&&CommonUtil.isNotEmpty(lpassword) &&CommonUtil.isNotEmpty(lport)
-					&&CommonUtil.isNotEmpty(lip)){
+			if(CommonUtils.isNotEmpty(rdbname)&&CommonUtils.isNotEmpty(rusername)
+					&&CommonUtils.isNotEmpty(rpassword) &&CommonUtils.isNotEmpty(rport)
+					&&CommonUtils.isNotEmpty(rip)&&
+					CommonUtils.isNotEmpty(ldbname)&&CommonUtils.isNotEmpty(lusername)
+					&&CommonUtils.isNotEmpty(lpassword) &&CommonUtils.isNotEmpty(lport)
+					&&CommonUtils.isNotEmpty(lip)){
 				remote.setDbName(rdbname);
 				remote.setUserName(rusername);
 				remote.setPassword(rpassword);
@@ -113,7 +113,7 @@ public class ETLExchangeTimer implements IBackgroundWorkPlugin{
 	}
 	
 	private void writeProp(SimpleDSMgr remotee, SimpleDSMgr locall) {
-		CommonUtil common = new CommonUtil();
+		CommonUtils common = new CommonUtils();
 		common.setPropFilepath(1);
 		common.setProperty("remote.dbname", remotee.getDbName());
 		common.setProperty("remote.username", remotee.getUserName());

@@ -8,7 +8,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ArrayBlockingQueue;
 
-import cn.gaily.pub.util.CommonUtil;
+import cn.gaily.pub.util.CommonUtils;
 import cn.gaily.simplejdbc.SimpleDSMgr;
 import cn.gaily.simplejdbc.SimpleJdbc;
 
@@ -43,7 +43,7 @@ public class ETLDeleteTask extends AbstractETLTask{
 						ArrayBlockingQueue<Map<String, Object>> valueList,
 						Map<String, String> colNameTypeMap, Boolean canBatch) {
 		
-		if(tarMgr==null||CommonUtil.isEmpty(tableName)||CommonUtil.isEmpty(pkName)){
+		if(tarMgr==null||CommonUtils.isEmpty(tableName)||CommonUtils.isEmpty(pkName)){
 			return ;
 		}
 		Map<String,Object> valueMap = null;
@@ -98,7 +98,7 @@ public class ETLDeleteTask extends AbstractETLTask{
 		} finally{
 			SimpleJdbc.release(null, pst, null);
 			tarMgr.release(tarConn);
-			tarMgr.release(srcConn);
+			srcMgr.release(srcConn);
 		}
 		
 		
@@ -112,7 +112,7 @@ public class ETLDeleteTask extends AbstractETLTask{
 //		enableTrigger(tarMgr, tableName, DISABLE);
 		
 		String pkValue = (String) valueMap.get(pkName); //TODO pkvalue可能是int
-		if(CommonUtil.isEmpty(pkValue)){
+		if(CommonUtils.isEmpty(pkValue)){
 			return;
 		}
 		//2.删除目标表中的数据
@@ -136,7 +136,7 @@ public class ETLDeleteTask extends AbstractETLTask{
 	 */
 	public void doDelete(SimpleDSMgr srcMgr, SimpleDSMgr tarMgr, String tableName, String pkName, String pkValue, Map<String,String> colNameTypeMap) {
 		
-		if(tarMgr==null||CommonUtil.isEmpty(tableName)||CommonUtil.isEmpty(pkName)){
+		if(tarMgr==null||CommonUtils.isEmpty(tableName)||CommonUtils.isEmpty(pkName)){
 			return ;
 		}
 		
@@ -156,7 +156,7 @@ public class ETLDeleteTask extends AbstractETLTask{
 			pst.clearParameters();
 			
 			String colType =colNameTypeMap.get(pkName);
-			if(CommonUtil.isEmpty(colType)){
+			if(CommonUtils.isEmpty(colType)){
 				throw new RuntimeException("获取主键字段类型出错");
 			}
 			pst = setValues(pst, pkName, colType, pkValue, null);
@@ -181,7 +181,7 @@ public class ETLDeleteTask extends AbstractETLTask{
 		}finally{
 			SimpleJdbc.release(null, pst, null);
 			tarMgr.release(tarConn);
-			tarMgr.release(srcConn);
+			srcMgr.release(srcConn);
 		}
 	}
 

@@ -10,7 +10,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.ArrayBlockingQueue;
 
-import cn.gaily.pub.util.CommonUtil;
+import cn.gaily.pub.util.CommonUtils;
 import cn.gaily.simplejdbc.SimpleDSMgr;
 import cn.gaily.simplejdbc.SimpleJdbc;
 
@@ -79,7 +79,7 @@ public class ETLUpdateTask extends AbstractETLTask{
 			while(!valueList.isEmpty()){
 				valueMap = valueList.poll();
 				pkValue = (String) valueMap.get(pkName);  //TODO pk可能为int或者其他类型
-				if(CommonUtil.isEmpty(pkValue)){
+				if(CommonUtils.isEmpty(pkValue)){
 					throw new RuntimeException("更新数据未获取到主键");
 				}
 				for(Iterator it=colNameTypeMap.entrySet().iterator();it.hasNext();){
@@ -127,7 +127,7 @@ public class ETLUpdateTask extends AbstractETLTask{
 	
 	@Override
 	public void doexecute(SimpleDSMgr srcMgr, SimpleDSMgr tarMgr, String tableName, String pkName, Map<String,Object> valueMap, Map<String,String> colNameTypeMap) {
-		if(srcMgr==null||tarMgr==null||CommonUtil.isEmpty(tableName)){
+		if(srcMgr==null||tarMgr==null||CommonUtils.isEmpty(tableName)){
 			throw new RuntimeException("更新数据库操作参数出错");
 		}
 
@@ -172,7 +172,7 @@ public class ETLUpdateTask extends AbstractETLTask{
 		}
 		sb.deleteCharAt(sb.length()-1);
 		String pkValue = (String) valueMap.get(pkName);  //TODO pk可能为int
-		if(CommonUtil.isEmpty(pkValue)){
+		if(CommonUtils.isEmpty(pkValue)){
 			throw new RuntimeException("更新数据未获取到主键");
 		}
 		sb.append(" WHERE ").append(pkName).append("='").append(pkValue).append("'");

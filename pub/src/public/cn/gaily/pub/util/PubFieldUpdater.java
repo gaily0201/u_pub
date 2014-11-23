@@ -96,7 +96,7 @@ public class PubFieldUpdater {
 	 * <p> history 2014-9-4 xiaoh  创建   <p>
 	 */
 	public boolean updateToDB(String tableName, String pkField, String updateField, DataSourceInfo ds){
-		if(CommonUtil.isEmpty(tableName)||CommonUtil.isEmpty(updateField)){
+		if(CommonUtils.isEmpty(tableName)||CommonUtils.isEmpty(updateField)){
 			return false;
 		}
 		PreparedStatement pst = null;
@@ -174,13 +174,13 @@ public class PubFieldUpdater {
 	 * <p> history 2014-8-28 xiaoh  创建   <p>
 	 */
 	public Map<String, String> getQueryInfo(String tableName,String[] fields,String wherePart, DataSourceInfo ds){
-		if(CommonUtil.isEmpty(tableName)||fields==null||fields.length<=0){
+		if(CommonUtils.isEmpty(tableName)||fields==null||fields.length<=0){
 			return null;
 		}
 		conn = SimpleJdbc.getConnection(ds.getnUserName(), ds.getnPassword(),ds.getnIp(),ds.getnName());
 		buildQuerySql(tableName, fields, wherePart);
 		try {
-			if(CommonUtil.isEmpty(querySql)){
+			if(CommonUtils.isEmpty(querySql)){
 				throw new RuntimeException("查询语句有错，请修改！");
 			}
 			st = conn.createStatement();
@@ -190,7 +190,7 @@ public class PubFieldUpdater {
 			while(rs.next()){
 				key = rs.getString(fields[0]);
 				value = rs.getString(fields[1]);
-				if(CommonUtil.isEmpty(key)||CommonUtil.isEmpty(value)){
+				if(CommonUtils.isEmpty(key)||CommonUtils.isEmpty(value)){
 					continue;
 				}
 				queryMap.put(key, value);
@@ -206,7 +206,7 @@ public class PubFieldUpdater {
 	
 	private String buildQuerySql(String tableName, String[] fields, String wherePart) {
 		StringBuilder sql = new StringBuilder("SELECT ");
-		if(fields!=null && fields.length>0 && CommonUtil.isNotEmpty(tableName)){
+		if(fields!=null && fields.length>0 && CommonUtils.isNotEmpty(tableName)){
 			getColList(conn, tableName);
 			for(int i=0;i<fields.length;i++){
 				if(!colList.contains(fields[i].trim().toUpperCase())){
@@ -220,7 +220,7 @@ public class PubFieldUpdater {
 		}
 		sql.delete(sql.length()-1, sql.length());
 		sql.append(" FROM "+tableName).append(" ");
-		if(CommonUtil.isNotEmpty(wherePart)){
+		if(CommonUtils.isNotEmpty(wherePart)){
 			sql.append(wherePart);
 		}
 		querySql = sql.toString().toUpperCase();
@@ -237,7 +237,7 @@ public class PubFieldUpdater {
 				String name = "";
 				while(rs.next()){
 					name = rs.getString(1);
-					if(CommonUtil.isNotEmpty(name)){
+					if(CommonUtils.isNotEmpty(name)){
 						colList.add(name.trim().toUpperCase());
 					}
 				}
@@ -298,9 +298,9 @@ public class PubFieldUpdater {
 			entry = it.next();
 			key = entry.getKey();
 			value =entry.getValue();
-			if(CommonUtil.isNotEmpty(value)){
+			if(CommonUtils.isNotEmpty(value)){
 				result = queryOnly(value, queryField, resultField);
-				if(CommonUtil.isNotEmpty(result)){
+				if(CommonUtils.isNotEmpty(result)){
 					updateMap.put(key, result);
 				}
 			}

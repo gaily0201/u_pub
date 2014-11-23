@@ -1,19 +1,19 @@
 package cn.gaily.pub.test;
 import nc.bs.framework.test.AbstractTestCase;
-import cn.gaily.pub.util.CommonUtil;
+import cn.gaily.pub.util.CommonUtils;
 
 
 public class TestCommonUtil extends AbstractTestCase {
 
 	
-	public void commonUtil(){
+	public void CommonUtils(){
 		
 		
-		String date1 = CommonUtil.getCurrentDate(CommonUtil.DATE_FORMATER_YYYY);
-		String date2 = CommonUtil.getCurrentDate(CommonUtil.DATE_FORMATER_YYYY_MM_DD);
-		String date3 = CommonUtil.getCurrentDate(CommonUtil.DATE_FORMATER_YYYY_MM_DD_TIME);
-		String date4 = CommonUtil.getCurrentDate(CommonUtil.DATE_FORMATER_YYYYMM);
-		String date5 = CommonUtil.getCurrentDate(CommonUtil.DATE_FORMATER_YYYYMMDD);
+		String date1 = CommonUtils.getCurrentDate(CommonUtils.DATE_FORMATER_YYYY);
+		String date2 = CommonUtils.getCurrentDate(CommonUtils.DATE_FORMATER_YYYY_MM_DD);
+		String date3 = CommonUtils.getCurrentDate(CommonUtils.DATE_FORMATER_YYYY_MM_DD_TIME);
+		String date4 = CommonUtils.getCurrentDate(CommonUtils.DATE_FORMATER_YYYYMM);
+		String date5 = CommonUtils.getCurrentDate(CommonUtils.DATE_FORMATER_YYYYMMDD);
 		System.out.println(date1);
 		System.out.println(date2);
 		System.out.println(date3);
@@ -32,11 +32,11 @@ public class TestCommonUtil extends AbstractTestCase {
 		String vdate3 = new String("2014-09-14 15:04:55");
 		String vdate4 = new String("201409");
 		String vdate5 = new String("20140914");
-		boolean b1 = CommonUtil.isValidDate(vdate1, CommonUtil.DATE_FORMATER_YYYY);
-		boolean b2 = CommonUtil.isValidDate(vdate2, CommonUtil.DATE_FORMATER_YYYY_MM_DD);
-		boolean b3 = CommonUtil.isValidDate(vdate3, CommonUtil.DATE_FORMATER_YYYY_MM_DD_TIME);
-		boolean b4 = CommonUtil.isValidDate(vdate4, CommonUtil.DATE_FORMATER_YYYYMM);
-		boolean b5 = CommonUtil.isValidDate(vdate5, CommonUtil.DATE_FORMATER_YYYYMMDD);
+		boolean b1 = CommonUtils.isValidDate(vdate1, CommonUtils.DATE_FORMATER_YYYY);
+		boolean b2 = CommonUtils.isValidDate(vdate2, CommonUtils.DATE_FORMATER_YYYY_MM_DD);
+		boolean b3 = CommonUtils.isValidDate(vdate3, CommonUtils.DATE_FORMATER_YYYY_MM_DD_TIME);
+		boolean b4 = CommonUtils.isValidDate(vdate4, CommonUtils.DATE_FORMATER_YYYYMM);
+		boolean b5 = CommonUtils.isValidDate(vdate5, CommonUtils.DATE_FORMATER_YYYYMMDD);
 		System.out.println(b1);
 		System.out.println(b2);
 		System.out.println(b3);
@@ -50,7 +50,7 @@ public class TestCommonUtil extends AbstractTestCase {
 			true
 		 */
 		
-		System.out.println(CommonUtil.formatDate("20140914"));
+		System.out.println(CommonUtils.formatDate("20140914"));
 	}
 	
 }

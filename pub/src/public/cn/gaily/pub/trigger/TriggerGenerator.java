@@ -7,7 +7,8 @@ import java.sql.Statement;
 import java.util.HashMap;
 import java.util.Map;
 
-import cn.gaily.pub.util.CommonUtil;
+import cn.gaily.pub.util.CommonUtils;
+import cn.gaily.simplejdbc.SimpleDSMgr;
 import cn.gaily.simplejdbc.SimpleJdbc;
 
 /**
@@ -25,9 +26,7 @@ public class TriggerGenerator {
 	public static final int UPDATE = 2;
 	public static final int DELETE = 3;
 
-	private Connection conn = null;
-	
-	
+	private SimpleDSMgr mgr = null;
 	
 	/**
 	 * <p>方法名称：generate</p>
@@ -40,6 +39,8 @@ public class TriggerGenerator {
 	 * <p> history 2014-10-27 xiaoh  创建   <p>
 	 */
 	public void generate(String tableName, Integer type, boolean fullBuild){
+		
+		ensureMgrTable("XFL_TABSTATUS");
 		
 		checkTempExist(tableName); 	//1、检验临时表是否存在，不存在创建
 		
@@ -68,9 +69,10 @@ public class TriggerGenerator {
 	 * <p> history 2014-10-27 xiaoh  创建   <p>
 	 */
 	private void execSql(String sql){
-		if(conn==null){
+		if(mgr==null){
 			throw new RuntimeException("请添加数据源");
 		}
+		Connection conn = mgr.getConnection();
 		Statement st = null;
 		try {
 			st = conn.createStatement();
@@ -80,6 +82,7 @@ public class TriggerGenerator {
 			throw new RuntimeException("执行创建触发器出错: "+e);
 		}finally{
 			SimpleJdbc.release(null, st, null);
+			mgr.release(conn);
 		}
 	}
 	
@@ -93,10 +96,11 @@ public class TriggerGenerator {
 	 * <p> history 2014-10-27 xiaoh  创建   <p>
 	 */
 	private boolean checkTempExist(String tableName){
-		if(conn==null){
+		if(mgr==null){
 			throw new RuntimeException("请添加数据源");
 		}
-		if(CommonUtil.isEmpty(tableName)){
+		Connection conn = mgr.getConnection();
+		if(CommonUtils.isEmpty(tableName)){
 			throw new RuntimeException("请传入有效的表名");
 		}
 		String sql = "SELECT COUNT(1) FROM USER_TABLES WHERE TABLE_NAME=?";
@@ -120,9 +124,40 @@ public class TriggerGenerator {
 			e.printStackTrace();
 		}finally{
 			SimpleJdbc.release(null, pst, rs);
+			mgr.release(conn);
 		}
 		
 		
+		return false;
+	}
+	
+	private boolean ensureMgrTable(String tableName){
+		if(mgr==null){
+			throw new RuntimeException("请添加数据源");
+		}
+		Connection conn = mgr.getConnection();
+		if(CommonUtils.isEmpty(tableName)){
+			throw new RuntimeException("请传入有效的表名");
+		}
+		String sql = "SELECT COUNT(1) FROM USER_TABLES WHERE TABLE_NAME=?";
+		Statement st = null;
+		PreparedStatement pst = null;
+		ResultSet rs = null;
+		try {
+			pst = conn.prepareStatement(sql);
+			pst.setString(1, tableName.toUpperCase().trim());
+			rs = pst.executeQuery();
+			st = conn.createStatement();
+			if(rs.next()&&"1".equals(rs.getString(1))){
+				return true;  //fix 临时表存在,可能含有数据,不删除直接返回
+			}
+			st.executeUpdate("CREATE TABLE "+tableName+"(TABLENAME VARCHAR2(30),STATUS CHAR(1))");
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}finally{
+			SimpleJdbc.release(null, pst, rs);
+			mgr.release(conn);
+		}
 		return false;
 	}
 	
@@ -135,11 +170,11 @@ public class TriggerGenerator {
 	 * <p> history 2014-10-27 xiaoh  创建   <p>
 	 */
 	private void enableTable(String tableName){
-		if(conn==null){
+		if(mgr==null){
 			throw new RuntimeException("请添加数据源");
 		}
-		
-		if(CommonUtil.isEmpty(tableName)){
+		Connection conn = mgr.getConnection();
+		if(CommonUtils.isEmpty(tableName)){
 			throw new RuntimeException("传入的表名无效"); //TODO 真实还需检验数据表中该表是否存在
 		}
 		String dsql = "DELETE XFL_TABSTATUS WHERE TABLENAME =?";
@@ -158,6 +193,7 @@ public class TriggerGenerator {
 			e.printStackTrace();
 		} finally{
 			SimpleJdbc.release(null, st, null);
+			mgr.release(conn);
 		}
 	}
 	
@@ -228,9 +264,10 @@ public class TriggerGenerator {
 	 * <p> history 2014-10-27 xiaoh  创建   <p>
 	 */
 	private Map<Integer, String> getTableCols(String tableName, int type) {
-		if(conn==null){
+		if(mgr==null){
 			throw new RuntimeException("请添加数据源");
 		}
+		Connection conn = mgr.getConnection();
 		Map<Integer,String> map = new HashMap<Integer,String>();
 		StringBuilder sb = new StringBuilder(" (");
 		StringBuilder nsb = new StringBuilder(" (");
@@ -257,16 +294,13 @@ public class TriggerGenerator {
 			throw new RuntimeException("查询数据出错:"+e);
 		}finally{
 			SimpleJdbc.release(null, pst, rs);
+			mgr.release(conn);
 		}
 		return map;
 	}
 	
-	public Connection getConn() {
-		return conn;
-	}
-	
-	public void setconn(Connection conn) {
-		this.conn = conn;
+	public void setMgr(SimpleDSMgr mgr) {
+		this.mgr = mgr;
 	}
 }
 
