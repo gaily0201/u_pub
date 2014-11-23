@@ -38,13 +38,13 @@ public class ETLDeleteTask extends AbstractETLTask{
 	}
 	
 	@Override
-	public void doBatch(SimpleDSMgr srcMgr, SimpleDSMgr tarMgr,
+	public int doBatch(SimpleDSMgr srcMgr, SimpleDSMgr tarMgr,
 						String tableName, String pkName,
 						ArrayBlockingQueue<Map<String, Object>> valueList,
 						Map<String, String> colNameTypeMap, Boolean canBatch) {
 		
 		if(tarMgr==null||CommonUtils.isEmpty(tableName)||CommonUtils.isEmpty(pkName)){
-			return ;
+			return 0;
 		}
 		Map<String,Object> valueMap = null;
 		String pkValue = null;
@@ -64,6 +64,7 @@ public class ETLDeleteTask extends AbstractETLTask{
 		delSb.deleteCharAt(delSb.length()-1);
 		delSb.append(")");
 		System.out.println(delSb);
+		int count = 0;
 		try {
 			tarConn.setAutoCommit(false);
 			srcConn.setAutoCommit(false);
@@ -77,7 +78,7 @@ public class ETLDeleteTask extends AbstractETLTask{
 				i++;
 			}
 			
-			int count = pst.executeUpdate();
+			count = pst.executeUpdate();
 			System.out.println("DELETE" + count +" record");
 			srcConn = delTemp(pkName, insertPks, tablePrefix+tableName, srcConn, DELETE, true);
 			
@@ -101,7 +102,7 @@ public class ETLDeleteTask extends AbstractETLTask{
 			srcMgr.release(srcConn);
 		}
 		
-		
+		return count;
 		
 	}
 	

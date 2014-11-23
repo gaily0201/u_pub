@@ -37,7 +37,7 @@ public class ETLUpdateTask extends AbstractETLTask{
 	}
 	
 	@Override
-	public void doBatch(SimpleDSMgr srcMgr, SimpleDSMgr tarMgr,
+	public int doBatch(SimpleDSMgr srcMgr, SimpleDSMgr tarMgr,
 						String tableName, String pkName,
 						ArrayBlockingQueue<Map<String, Object>> valueList,
 						Map<String, String> colNameTypeMap, Boolean canBatch) {
@@ -69,6 +69,7 @@ public class ETLUpdateTask extends AbstractETLTask{
 		
 		Connection targetConn = tarMgr.getConnection();
 		Connection srcConn = srcMgr.getConnection();
+		int count = 0;
 		try {
 			targetConn.setAutoCommit(false);
 			srcConn.setAutoCommit(false);
@@ -102,7 +103,8 @@ public class ETLUpdateTask extends AbstractETLTask{
 				ipst.addBatch();
 				ipst.clearParameters();
 			}
-			ipst.executeBatch();
+			int[] ss = ipst.executeBatch();
+			count = ss.length;
 			System.out.println("UPDATE " + batchSize +" record");
 			srcConn = delTemp(pkName, insertPks, tablePrefix+tableName, srcConn, UPDATE, true); //删除出本次操作临时表数据
 			targetConn.commit();
@@ -122,6 +124,7 @@ public class ETLUpdateTask extends AbstractETLTask{
 			tarMgr.release(targetConn);
 			srcMgr.release(srcConn);
 		}
+		return count;
 	}
 	
 	

@@ -31,9 +31,10 @@ public class DefaultETLTask extends AbstractETLTask {
 	}
 
 	@Override
-	public void doBatch(SimpleDSMgr srcMgr, SimpleDSMgr tarMgr, String tableName, String pkName,
+	public int doBatch(SimpleDSMgr srcMgr, SimpleDSMgr tarMgr, String tableName, String pkName,
 						ArrayBlockingQueue<Map<String, Object>> valueList,
 						Map<String, String> colNameTypeMap, Boolean canBatch) {
+		return 0;
 	}
 
 }

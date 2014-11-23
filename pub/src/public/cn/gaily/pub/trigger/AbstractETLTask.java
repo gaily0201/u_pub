@@ -115,7 +115,7 @@ public abstract class AbstractETLTask {
 		
 	}
 	
-	public String execute(SimpleDSMgr srcMgr, SimpleDSMgr tarMgr, String tableName){
+	public Map<String,String> execute(SimpleDSMgr srcMgr, SimpleDSMgr tarMgr, String tableName){
 		return execute(srcMgr, tarMgr, tableName,  false);
 	}
 	
@@ -130,7 +130,7 @@ public abstract class AbstractETLTask {
 	 * @since  2014-10-29
 	 * <p> history 2014-10-29 xiaoh  创建   <p>
 	 */
-	public String execute(SimpleDSMgr srcMgr, SimpleDSMgr tarMgr, String tableName, boolean isSyn){
+	public Map<String,String> execute(SimpleDSMgr srcMgr, SimpleDSMgr tarMgr, String tableName, boolean isSyn){
 		if(srcMgr==null||tarMgr==null||CommonUtils.isEmpty(tableName)){
 			throw new RuntimeException("执行前数据预置参数出错");
 		}
@@ -143,6 +143,11 @@ public abstract class AbstractETLTask {
 		Boolean canBatch =  null;
 		String status = null;
 		int round = 0;
+		
+		int add = 0;
+		int update = 0;
+		int delete = 0;
+		
 		while(true){
 			
 			long start = System.currentTimeMillis();
@@ -169,17 +174,19 @@ public abstract class AbstractETLTask {
 				switch(type){
 				case NEW:
 					task = ETLInsertTask.getInstance();
+					add += task.doBatch(srcMgr, tarMgr, tableName, pkName,  valueList, colNameTypeMap, canBatch);
 					break;
 				case UPDATE:
 					task = ETLUpdateTask.getInstance();
+					update += task.doBatch(srcMgr, tarMgr, tableName, pkName,  valueList, colNameTypeMap, canBatch);
 					break;
 				case DELETE:
 					task = ETLDeleteTask.getInstance();
+					delete += task.doBatch(srcMgr, tarMgr, tableName, pkName,  valueList, colNameTypeMap, canBatch);
 					break;
 				default:
 					throw new RuntimeException("出错");
 				}
-				task.doBatch(srcMgr, tarMgr, tableName, pkName,  valueList, colNameTypeMap, canBatch);
 			}else{
 				Map<String,Object> map = null;
 				int i=0;
@@ -199,21 +206,23 @@ public abstract class AbstractETLTask {
 					switch(type){
 					case NEW:
 						task = ETLInsertTask.getInstance();
-						System.out.println("insert: "+((round-1)*batchSize+i)); //TODO 测试用
+						task.doexecute(srcMgr, tarMgr, tableName, pkName,  map, colNameTypeMap);
+						add++;
 						break;
 					case UPDATE:
 						task = ETLUpdateTask.getInstance();
-						System.out.println("update: "+((round-1)*batchSize+i)); //TODO 测试用
+						task.doexecute(srcMgr, tarMgr, tableName, pkName,  map, colNameTypeMap);
+						update++;
 						break;
 					case DELETE:
 						task = ETLDeleteTask.getInstance();
-						System.out.println("delete: "+((round-1)*batchSize+i)); //TODO 测试用
+						task.doexecute(srcMgr, tarMgr, tableName, pkName,  map, colNameTypeMap);
+						delete++;
 						break;
 					default:
 						throw new RuntimeException("出错");
 					}
 					
-					task.doexecute(srcMgr, tarMgr, tableName, pkName,  map, colNameTypeMap);
 				}
 			}
 			
@@ -223,7 +232,12 @@ public abstract class AbstractETLTask {
 		
 		enableTrigger(tarMgr, tableName, ENABLE);  //恢复触发器
 		
-		return pkName;
+		Map<String,String> map = new HashMap<String,String>();
+		map.put("add", String.valueOf(add));
+		map.put("update", String.valueOf(update));
+		map.put("delete", String.valueOf(delete));
+		
+		return map;
 	}
 	
 	/**
@@ -240,7 +254,7 @@ public abstract class AbstractETLTask {
 	 * @since  2014-11-5
 	 * <p> history 2014-11-5 xiaoh  创建   <p>
 	 */
-	public abstract void doBatch(SimpleDSMgr srcMgr, SimpleDSMgr tarMgr,
+	public abstract int doBatch(SimpleDSMgr srcMgr, SimpleDSMgr tarMgr,
 								 String tableName, String pkName,
 								 ArrayBlockingQueue<Map<String, Object>> valueList,
 								 Map<String, String> colNameTypeMap, Boolean canBatch);

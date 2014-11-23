@@ -106,7 +106,7 @@ public class SimpleSession {
 		try {
 			pst = conn.createStatement();
 			rs = pst.executeQuery(sql);
-			if(rs.next() && 1==rs.getInt(1)){
+			if(rs.next() && 0<=rs.getInt(1)){
 				return rs.getInt(1);
 			}
 		} catch (SQLException e) {

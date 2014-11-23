@@ -185,7 +185,7 @@ public class ETLSynTask {
 				pst.setString(3, value);
 				pst.addBatch();
 				pst.clearParameters();
-				if(i/800==0||i==count){
+				if(i%800==0||i==count){
 					pst.executeBatch();
 					pst.clearBatch();
 				}
@@ -260,17 +260,14 @@ public class ETLSynTask {
 		Connection conn = ds.getConnection();
 		Statement st = null;
 		try {
-			conn.setAutoCommit(false);
 			st  = conn.createStatement();
 			if(has){
 				st.executeUpdate(dsql);
-				conn.commit();
 			}
 			st.executeUpdate(sql);
 //			st.executeUpdate(pkvsql);
 //			st.executeUpdate(tabsql);
 //			st.executeUpdate(pknsql);
-			conn.commit();
 		} catch (SQLException e) {
 			try {
 				conn.rollback();
