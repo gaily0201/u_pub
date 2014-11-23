@@ -1,6 +1,7 @@
 package cn.gaily.pub.trigger;
 
 import java.io.ByteArrayInputStream;
+import java.math.BigDecimal;
 import java.sql.Blob;
 import java.sql.Clob;
 import java.sql.Connection;
@@ -114,17 +115,22 @@ public abstract class AbstractETLTask {
 		
 	}
 	
+	public String execute(SimpleDSMgr srcMgr, SimpleDSMgr tarMgr, String tableName){
+		return execute(srcMgr, tarMgr, tableName,  false);
+	}
+	
 	/**
 	 * <p>方法名称：execute</p>
 	 * <p>方法描述：执行数据预置</p>
 	 * @param srcMgr
 	 * @param tarMgr
 	 * @param tableName
+	 * @param isSyn 	是否是历史数据同步任务
 	 * @author xiaoh
 	 * @since  2014-10-29
 	 * <p> history 2014-10-29 xiaoh  创建   <p>
 	 */
-	public String execute(SimpleDSMgr srcMgr, SimpleDSMgr tarMgr, String tableName){
+	public String execute(SimpleDSMgr srcMgr, SimpleDSMgr tarMgr, String tableName, boolean isSyn){
 		if(srcMgr==null||tarMgr==null||CommonUtils.isEmpty(tableName)){
 			throw new RuntimeException("执行前数据预置参数出错");
 		}
@@ -142,10 +148,16 @@ public abstract class AbstractETLTask {
 			long start = System.currentTimeMillis();
 			
 			System.out.println(++round);
-			Map<String,Object> recvMap = queryTempData(tableName, srcMgr, 0); //操作每张表的pk是唯一的
+			Map<String,Object> recvMap = null;
+			if(isSyn){
+				recvMap = queryTempData(tableName, srcMgr, 0, true);  //同步历史数据
+				status = "1";
+			}else{
+				recvMap = queryTempData(tableName, srcMgr, 0, false);
+				status = (String) recvMap.get("status");
+			}
 			canBatch = (Boolean) recvMap.get("canBatch");
 			pkName = (String) recvMap.get("pkName");
-			status = (String) recvMap.get("status");
 			
 			if(canBatch==null||CommonUtils.isEmpty(pkName)||CommonUtils.isEmpty(status)){
 				break;
@@ -287,7 +299,8 @@ public abstract class AbstractETLTask {
 				 if((String.valueOf(value)).contains(".")){
 					 ipst.setDouble(colIndexMap.get(colName), Double.valueOf((String.valueOf(value))));
 				 }else{
-					 ipst.setInt(colIndexMap.get(colName), Integer.valueOf(String.valueOf(value)));
+//					 ipst.setInt(colIndexMap.get(colName), Integer.valueOf(String.valueOf(value)));
+					 ipst.setBigDecimal(colIndexMap.get(colName), new BigDecimal(String.valueOf(value)));
 				 }
 				 
 			}else if("CLOB".equals(colType)){
@@ -346,12 +359,13 @@ public abstract class AbstractETLTask {
 	 * <p>方法描述：查询临时表中的数据</p>
 	 * @param tableName
 	 * @param srcMgr
+	 * @param isSyn	是否为同步历史数据
 	 * @return canBatch 是否能批量
 	 * @author xiaoh
 	 * @since  2014-10-29
 	 * <p> history 2014-10-29 xiaoh  创建   <p>
 	 */
-	public Map<String,Object> queryTempData(String tableName,SimpleDSMgr srcMgr, int round) {
+	public Map<String,Object> queryTempData(String tableName,SimpleDSMgr srcMgr, int round, boolean isSyn) {
 		
 		Map<String,Object> returnMap = new HashMap<String,Object>();
 		
@@ -381,8 +395,9 @@ public abstract class AbstractETLTask {
 		}
 		querySrcSb.deleteCharAt(querySrcSb.length()-1);
 		querySrcSb.append(" FROM ").append(tablePrefix).append(tableName).append(" WHERE ROWNUM<=").append(batchSize);
-		querySrcSb.append(" ORDER BY ETLTS ASC");
-		
+		if(!isSyn){
+			querySrcSb.append(" ORDER BY ETLTS ASC");
+		}
 		Statement st = null;
 		ResultSet rs = null;
 		String status = null;

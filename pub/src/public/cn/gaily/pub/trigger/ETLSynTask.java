@@ -53,7 +53,7 @@ public class ETLSynTask {
 		synTempPk(src, dest, tableName);
 		
 		AbstractETLTask task = DefaultETLTask.getInstance();
-		task.execute(src, dest, tableName);  //TODO 修改status为1;修改查询临时表ETL_前缀 ...
+		task.execute(src, dest, tableName, true);  //TODO 修改status为1;修改查询临时表ETL_前缀 ...
 		
 		dropTemTab(src);
 	}

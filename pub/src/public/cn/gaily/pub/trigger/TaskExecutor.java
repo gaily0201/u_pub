@@ -55,6 +55,35 @@ public class TaskExecutor {
 		}
 		return true;
 	}
+
+	/**
+	 * <p>方法名称：executeSyn</p>
+	 * <p>方法描述：历史数据同步</p>
+	 * @param srcMgr
+	 * @param destMgr
+	 * @return
+	 * @author xiaoh
+	 * @since  2014-11-23
+	 * <p> history 2014-11-23 xiaoh  创建   <p>
+	 */
+	public boolean executeSyn(SimpleDSMgr srcMgr, SimpleDSMgr destMgr){
+		List<String> srcTableNames = getAllTables(srcMgr);
+		List<String> destTableNames = getAllTables(destMgr);
+		
+		ETLSynTask task = new ETLSynTask();
+		for(String tableName: srcTableNames){
+			task.doExecute(srcMgr, destMgr, tableName);
+			task.doExecute(destMgr, srcMgr, tableName);
+			destTableNames.remove(tableName);
+		}
+		
+		if(destTableNames.size()>0){
+			for(String tableName:destTableNames){
+				task.doExecute(destMgr, srcMgr, tableName);
+			}
+		}
+		return true;
+	}
 	
 	/**
 	 * <p>方法名称：getAllTables</p>
