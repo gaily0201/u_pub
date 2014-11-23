@@ -151,7 +151,7 @@ public class ETLSynTask {
 		if(CommonUtils.isEmpty(pkName)){
 			return;
 		}
-		String insql = "INSERT INTO "+tempTabName+"(TABNAME,PKNAME,PKVALUE) VALUES(?,?,?)";
+		String insql = "INSERT INTO "+tempTabName+"(TABLENAME,PKNAME,PKVALUE) VALUES(?,?,?)";
 		String qusql = "SELECT "+pkName + " FROM "+tableName;
 		
 		Connection conn = src.getConnection();
@@ -216,7 +216,7 @@ public class ETLSynTask {
 		if(CommonUtils.isNotEmpty(pkName)){
 			return pkName;
 		}
-		String sql = " SELECT A.COLUMN_NAME INTO PKNAME FROM USER_CONS_COLUMNS A, USER_CONSTRAINTS B" +
+		String sql = " SELECT A.COLUMN_NAME FROM USER_CONS_COLUMNS A, USER_CONSTRAINTS B" +
 					 " WHERE A.CONSTRAINT_NAME = B.CONSTRAINT_NAME" +
 			         " AND B.CONSTRAINT_TYPE = 'P'  AND A.TABLE_NAME ='"+tableName+"'";
 		
@@ -254,9 +254,9 @@ public class ETLSynTask {
 		boolean has = SimpleSession.checkHasTable(ds, tempTabName);
 		String dsql = "DROP TABLE "+tempTabName;
 		String sql = "CREATE TABLE "+tempTabName+"(PKVALUE VARCHAR2(50), TABLENAME VARCHAR2(30), PKNAME VARCHAR2(50))";
-		String pkvsql = "CREATE INDEX IDX_V ON "+tempTabName+"(PKVALUE)";
-		String tabsql = "CREATE INDEX IDX_T ON "+tempTabName+"(TABNAME)";
-		String pknsql = "CREATE INDEX IDX_N ON "+tempTabName+"(PKNAME)";
+//		String pkvsql = "CREATE INDEX IDX_V ON "+tempTabName+"(PKVALUE)";
+//		String tabsql = "CREATE INDEX IDX_T ON "+tempTabName+"(TABNAME)";
+//		String pknsql = "CREATE INDEX IDX_N ON "+tempTabName+"(PKNAME)";
 		Connection conn = ds.getConnection();
 		Statement st = null;
 		try {
@@ -267,9 +267,9 @@ public class ETLSynTask {
 				conn.commit();
 			}
 			st.executeUpdate(sql);
-			st.executeUpdate(pkvsql);
-			st.executeUpdate(tabsql);
-			st.executeUpdate(pknsql);
+//			st.executeUpdate(pkvsql);
+//			st.executeUpdate(tabsql);
+//			st.executeUpdate(pknsql);
 			conn.commit();
 		} catch (SQLException e) {
 			try {

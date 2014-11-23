@@ -101,12 +101,11 @@ public class SimpleSession {
 			throw new RuntimeException("校验表是否存在时传入表名无效");
 		}
 		String sql = "SELECT COUNT(1) FROM "+tableName;
-		PreparedStatement pst = null;
+		Statement pst = null;
 		ResultSet rs = null;
 		try {
-			pst = conn.prepareStatement(sql);
-			pst.setString(1, tableName.toUpperCase().trim());
-			rs = pst.executeQuery();
+			pst = conn.createStatement();
+			rs = pst.executeQuery(sql);
 			if(rs.next() && 1==rs.getInt(1)){
 				return rs.getInt(1);
 			}
@@ -133,7 +132,7 @@ public class SimpleSession {
 		if(CommonUtils.isEmpty(tableName)){
 			throw new RuntimeException("校验表是否存在时传入表名无效");
 		}
-		String sql = "SELECT COUNT(1) FROM USER_TABLES WHERE TABLENAME=?";
+		String sql = "SELECT COUNT(1) FROM USER_TABLES WHERE TABLE_NAME=?";
 		PreparedStatement pst = null;
 		ResultSet rs = null;
 		try {
