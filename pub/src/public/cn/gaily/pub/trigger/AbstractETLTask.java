@@ -19,7 +19,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.ArrayBlockingQueue;
-
 import cn.gaily.pub.util.CommonUtils;
 import cn.gaily.simplejdbc.SimpleDSMgr;
 import cn.gaily.simplejdbc.SimpleJdbc;
@@ -69,14 +68,14 @@ public abstract class AbstractETLTask {
 	public int batchSize = DEFAULT_BATCHSIZE;
 	
 	/**
-	 * 触发器管理表
-	 */
-	protected String mgrTriggerTabName = "XFL_TABSTATUS";
-	
-	/**
 	 * 临时表前缀
 	 */
-	protected String tablePrefix = "XFL_";
+	public static String tablePrefix = "XFL_";
+	
+	/**
+	 * 触发器管理表
+	 */
+	protected String mgrTriggerTabName =tablePrefix+"TABSTATUS";
 	
 	/**
 	 * 表名字段名map，key:表名大写,value:字段名,字段类型map
@@ -571,16 +570,16 @@ public abstract class AbstractETLTask {
 		}
 		Connection conn = mgr.getConnection();
 		
-		ensureMgrTable(mgr,"XFL_TABSTATUS");
+		ensureMgrTable(mgr,tablePrefix+"TABSTATUS");
 		
 		String sql = null;
 		String sql1 = null;
 		if(type==0){
 			sql = "ALTER TABLE "+tableName+" DISABLE ALL TRIGGERS";
-			sql1 = "UPDATE XFL_TABSTATUS SET STATUS=0 WHERE TABLENAME='"+tableName+"'";
+			sql1 = "UPDATE "+tablePrefix+"TABSTATUS SET STATUS=0 WHERE TABLENAME='"+tableName+"'";
 		}else if(type==1){
 			sql = "ALTER TABLE "+tableName+" ENABLE ALL TRIGGERS";
-			sql1 = "UPDATE XFL_TABSTATUS SET STATUS=1 WHERE TABLENAME='"+tableName+"'";
+			sql1 = "UPDATE "+tablePrefix+"TABSTATUS SET STATUS=1 WHERE TABLENAME='"+tableName+"'";
 		}
 		Statement st = null;
 		try {
@@ -724,6 +723,10 @@ public abstract class AbstractETLTask {
 		return false;
 	}
 	
+	
+	public void setTablePrefix(String tablePrefix) {
+		this.tablePrefix = tablePrefix;
+	}
 	
 	public void setBatchSize(int batchSize) {
 		this.batchSize = batchSize;

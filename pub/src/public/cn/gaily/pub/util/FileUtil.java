@@ -1,9 +1,11 @@
 package cn.gaily.pub.util;
 
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -20,41 +22,33 @@ import cn.gaily.simplejdbc.SimpleJdbc;
 
 public class FileUtil {
 
-	
-	
-	
-	public static void readFile(String srcfile, String destfile) throws IOException{
-		byte[] bb = FileUtils.readFileToByteArray(new File(srcfile));
-		
-		byte[] last = new byte[bb.length];
-		
-		for(int i=0;i<bb.length;i++){
-			bb[i] = (byte) (bb[i]*2);
-			last[i] = bb[i];
+	/**
+	 * <p>方法名称：writeFile</p>
+	 * <p>方法描述：写文件</p>
+	 * @param fileName			文件名
+	 * @param data				数据
+	 * @param append			是否追加
+	 * @throws IOException
+	 * @author xiaoh
+	 * @since  2014-11-27
+	 * <p> history 2014-11-27 xiaoh  创建   <p>
+	 */
+	public static void writeFile(String fileName, String data, boolean append) throws IOException{
+		if(CommonUtils.isEmpty(fileName)||CommonUtils.isEmpty(data)){
+			return;
 		}
-		
-		File destFile = new File(destfile);
-		if(!destFile.exists()){
-			destFile.createNewFile();
+		data = data+"\r\n";
+		File file = new File(fileName);
+		if(!file.getParentFile().exists()){
+			file.getParentFile().mkdirs();
 		}
-		FileUtils.writeByteArrayToFile(destFile, last);
-	}
-	
-	public static void writeFile(String srcfile, String destfile) throws IOException{
-		byte[] bb = FileUtils.readFileToByteArray(new File(srcfile));
-		
-		byte[] last = new byte[bb.length];
-		
-		for(int i=0;i<bb.length;i++){
-			bb[i] = (byte) (bb[i]/2);
-			last[i] = bb[i];
+		if(!file.exists()){
+			file.createNewFile();
 		}
-		
-		File destFile = new File(destfile);
-		if(!destFile.exists()){
-			destFile.createNewFile();
-		}
-		FileUtils.writeByteArrayToFile(destFile, last);
+		BufferedWriter writer = new BufferedWriter(new FileWriter(file, append));
+		writer.write(data);
+		writer.flush();
+		writer.close();
 	}
 	
 	
