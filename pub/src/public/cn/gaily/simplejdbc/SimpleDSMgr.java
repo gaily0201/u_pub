@@ -91,12 +91,6 @@ public class SimpleDSMgr implements Serializable{
 			if(conn!=null){
 				conns.add(conn);
 			}
-//			try {
-//				conn.setAutoCommit(false);
-//			} catch (SQLException e) {
-//				e.printStackTrace();
-//				throw new RuntimeException("设置手动提交失败");
-//			}
 		}
 	}
 	

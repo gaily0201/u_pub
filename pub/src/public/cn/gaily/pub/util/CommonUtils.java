@@ -31,7 +31,7 @@ import com.sun.image.codec.jpeg.JPEGEncodeParam;
 import com.sun.image.codec.jpeg.JPEGImageEncoder;
 
 /**
- * <p>Title: CommonUtils</P>
+ * <p>Title: CommonUtil</P>
  * <p>Description: 基础的工具类</p>
  * <p>Copyright: 用友政务软件有限公司 Copyright (c) 2014</p>
  * @author xiaoh
@@ -49,7 +49,7 @@ public class CommonUtils {
 	 */
 	public static final String  WEB_ETL_DB_CONFIG_PATH = System.getProperty("user.home")+File.separator;
 	
-	public static final String ETL_DB_CONFIG_NAME = "etl_config.properties";
+	public String ETL_DB_CONFIG_NAME = "etl_config.properties";
 	
 	public static final String 	DATE_FORMATER_YYYY      = "yyyy";
 	public static final String 	DATE_FORMATER_YYYYMM    = "yyyyMM";
@@ -376,8 +376,9 @@ public class CommonUtils {
 		return null;
 	}
 	
-	public String getProperty(String key){
+	public String getProperty(String fileName,String key){
 		Properties prop = null;
+		setPropFilepath(fileName, 1);
 		if(in==null){
 //			in = CommonUtils.class.getResourceAsStream(propFilepath);
 			try {
@@ -409,10 +410,10 @@ public class CommonUtils {
 		return value;
 	}
 	
-	public void setProperty(String key,String value){
+	public void setProperty(String fileName, String key,String value){
 		Properties prop = null;
 		FileOutputStream fos = null;
-		setPropFilepath(1);
+		setPropFilepath(fileName, 1);
 		if(in==null){
 			prop = new Properties();
 			try {
@@ -462,11 +463,14 @@ public class CommonUtils {
 	 * @since  2014-11-17
 	 * <p> history 2014-11-17 xiaoh  创建   <p>
 	 */
-	public void setPropFilepath(int type) {
-		if(type==1){
-			this.propFilepath = UAP_ETL_DB_CONFIG_PATH+ETL_DB_CONFIG_NAME;
-		}else if(type==2){
+	public void setPropFilepath(String fileName, int type) {
+		String  suffix = ".properties";
+		if(isNotEmpty(fileName)&&type==1){
+			this.propFilepath = UAP_ETL_DB_CONFIG_PATH+ fileName+ suffix;
+		}else if(isNotEmpty(fileName)&&type==2){
 			this.propFilepath = WEB_ETL_DB_CONFIG_PATH+ETL_DB_CONFIG_NAME;
+		}else{
+			this.propFilepath = UAP_ETL_DB_CONFIG_PATH+ETL_DB_CONFIG_NAME;
 		}
 		File f =new File(this.propFilepath);
 		if(!f.getParentFile().exists()){
@@ -492,6 +496,10 @@ public class CommonUtils {
 			}
 		}
 		return pks;
+	}
+	
+	public void setETL_DB_CONFIG_NAME(String eTL_DB_CONFIG_NAME) {
+		ETL_DB_CONFIG_NAME = eTL_DB_CONFIG_NAME;
 	}
 	
 }

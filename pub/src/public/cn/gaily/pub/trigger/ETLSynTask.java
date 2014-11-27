@@ -38,13 +38,18 @@ public class ETLSynTask {
 	 * @since  2014-11-22
 	 * <p> history 2014-11-22 xiaoh  创建   <p>
 	 */
-	public void doExecute(SimpleDSMgr src, SimpleDSMgr dest, String tableName){
+	public Map<String,String> doExecute(SimpleDSMgr src, SimpleDSMgr dest, String tableName){
 		/**
 		 * 1. 创建临时表
 		 * 2. 将主键数据插入临时表
 		 * 3. 将目标数据库同表主键与临时表主键比较，将存在的主键从临时表删除
 		 * 4. 查询源库数据，插入目标库
 		 */
+		int count1 = SimpleSession.getRecordCount(src, tableName);
+		int count2 = SimpleSession.getRecordCount(dest, tableName);
+		if(count1==count2){			//数据量一致，默认为已同步
+			return null;
+		}
 		
 		buildTempTab(src);
 		
@@ -52,10 +57,18 @@ public class ETLSynTask {
 		
 		synTempPk(src, dest, tableName);
 		
+		int record = SimpleSession.getRecordCount(src, "ETL_PK_TEMP");
+		
+		if(record<=0){
+			return null;
+		}
+		
 		AbstractETLTask task = DefaultETLTask.getInstance();
-		task.execute(src, dest, tableName, true);  //TODO 修改status为1;修改查询临时表ETL_前缀 ...
+		Map<String,String> map = task.execute(src, dest, tableName, true);  //TODO 修改status为1;修改查询临时表ETL_前缀 ...
 		
 		dropTemTab(src);
+		
+		return map;
 	}
 	
 	
@@ -107,7 +120,9 @@ public class ETLSynTask {
 			pst = srcConn.prepareStatement(sql);
 			st = destConn.createStatement();
 			rs = st.executeQuery(qsql);
+			int i = 0;
 			while(rs.next()){
+				i++;
 				value = rs.getString(1);
 				if(CommonUtils.isEmpty(value)){
 					continue;
@@ -119,6 +134,11 @@ public class ETLSynTask {
 				pst.addBatch();
 				pst.clearParameters();
 				pkValues.remove(value);
+				if(i%800==0){
+					pst.executeBatch();
+					srcConn.commit();
+					pst.clearBatch();
+				}
 			}
 			pst.executeBatch();
 			srcConn.commit();
@@ -197,6 +217,7 @@ public class ETLSynTask {
 			SimpleJdbc.release(null, st, rs);
 			SimpleJdbc.release(null, pst, null);
 			src.release(conn);
+			src.release(iconn);
 		}
 	}
 	

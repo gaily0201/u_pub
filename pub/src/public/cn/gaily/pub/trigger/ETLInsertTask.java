@@ -7,6 +7,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -31,7 +32,11 @@ public class ETLInsertTask extends AbstractETLTask{
 	
 	public static ETLInsertTask instance = null;
 	
+	private Map<String,List<String>> tarPks = new HashMap<String,List<String>>();
 	
+	String pTab = null;
+	
+	boolean sameTab = true;
 	
 	private ETLInsertTask(){}
 	
@@ -50,6 +55,20 @@ public class ETLInsertTask extends AbstractETLTask{
 						ArrayBlockingQueue<Map<String, Object>> valueList,
 						Map<String, String> colNameTypeMap, Boolean canBatch) {
 		
+		if(pTab==null){
+			pTab  = tableName;
+			sameTab = true;
+		}
+		if(!tableName.equalsIgnoreCase(pTab)){
+			sameTab = false;
+			pTab = null;
+			if(tarPks.get(tableName.toUpperCase())!=null){
+				tarPks.remove(tableName.toUpperCase());
+			}
+		}
+		if(tableName.equalsIgnoreCase(pTab)){
+			sameTab = true;
+		}
 		
 		if(srcMgr==null||tarMgr==null||CommonUtils.isEmpty(tableName)){
 			throw new RuntimeException("新增数据库操作参数出错");
@@ -59,11 +78,14 @@ public class ETLInsertTask extends AbstractETLTask{
 		String colName = null;
 		String colType = null;
 		Entry<String,String> entry =  null;
-		
+		boolean isSyn = true;
 		int n=0;
 		for(Iterator it=colNameTypeMap.entrySet().iterator();it.hasNext();){
 			entry = (Entry<String, String>) it.next();
 			colName = entry.getKey();
+			if("ETLSTATUS".equalsIgnoreCase(colName)){
+				isSyn = false;
+			}
 			if(!"ETLSTATUS".equalsIgnoreCase(colName)&&!"ETLPKNAME".equalsIgnoreCase(colName)&&!"ETLTS".equalsIgnoreCase(colName)){
 				tarSb.append(colName).append(",");
 				colIndexMap.put(colName, ++n);
@@ -71,8 +93,14 @@ public class ETLInsertTask extends AbstractETLTask{
 		}
 		tarSb.deleteCharAt(tarSb.length()-1);
 		tarSb.append(") VALUES(");
-		for(int i=0;i<colNameTypeMap.size()-3;i++){
-			tarSb.append("?,");
+		if(isSyn){
+			for(int i=0;i<colNameTypeMap.size();i++){
+				tarSb.append("?,");
+			}
+		}else{
+			for(int i=0;i<colNameTypeMap.size()-3;i++){
+				tarSb.append("?,");
+			}
 		}
 		tarSb.deleteCharAt(tarSb.length()-1);
 		tarSb.append(") ");
@@ -80,8 +108,14 @@ public class ETLInsertTask extends AbstractETLTask{
 		System.out.println(insertSql);
 		List<String> insertPks = new ArrayList<String>(); //保存插入的数据的pk值,便于删除使用
 		
-		List<String> tarPks = queryHasPks(tarMgr, tableName, pkName); //获取目标库中已经存在的pk，避免数据重复插入
-
+		List<String> tarPkList = null;
+		if(tarPks.get(tableName.toUpperCase())!=null&&tarPks.get(tableName.toUpperCase()).size()>0&&sameTab){
+			tarPkList = tarPks.get(tableName.toUpperCase());
+		}else{
+			tarPkList = queryHasPks(tarMgr,tableName,pkName); //获取目标库中已经存在的pk，避免数据重复插入
+			tarPks.put(tableName.toUpperCase(), tarPkList);
+		}
+		
 		PreparedStatement pst = null;
 		Connection targetConn = tarMgr.getConnection();
 		Connection srcConn = srcMgr.getConnection();
@@ -95,33 +129,32 @@ public class ETLInsertTask extends AbstractETLTask{
 			while(!valueList.isEmpty()){
 				valueMap = valueList.poll();
 				pkValue = (String) valueMap.get(pkName);
-				if(tarPks.contains(pkValue)){
+				
+				insertPks.add(pkValue);   //TODO 可能主键字段数据不是String类型
+				
+				if(tarPkList.contains(pkValue)){
 					continue;  //目标库中已经存在Pk值，不插入
 				}
+				tarPkList.add(pkValue);
+				tarPks.put(tableName.toUpperCase(), tarPkList);
 				for(Iterator it=colNameTypeMap.entrySet().iterator();it.hasNext();){
 					entry = (Entry<String, String>) it.next();
 					colName = entry.getKey();
 					colType = entry.getValue();
 					Object value = valueMap.get(colName);
-					if(colName.equals(pkName)){
-						insertPks.add((String)value);   //TODO 可能主键字段数据不是String类型
-					}
 					List<String> ignoreCols = Arrays.asList(new String[]{"ETLSTATUS","ETLPKNAME","ETLTS"});
 					pst =setValues(pst, colName, colType, value, ignoreCols);  //设置列值
 				}
 				pst.addBatch();
 			}
-			
 			int[] ss = pst.executeBatch();
-			count = ss.length;
+			count += ss.length;
 			System.out.println("insert "+ batchSize +" record");
 			srcConn = delTemp(pkName, insertPks, tablePrefix+tableName, srcConn, NEW, true); //删除出本次操作临时表数据
-			
 			targetConn.commit();
 			srcConn.commit();
 			pst.clearParameters();
 			pst.clearBatch();
-			
 		}catch (SQLException e) {
 			try {
 				targetConn.rollback();
@@ -170,6 +203,9 @@ public class ETLInsertTask extends AbstractETLTask{
 			}
 		} catch (SQLException e) {
 			e.printStackTrace();
+		} finally{
+			SimpleJdbc.release(null, st, rs);
+			tarMgr.release(conn);
 		}
 		return pks;
 	}
@@ -212,6 +248,17 @@ public class ETLInsertTask extends AbstractETLTask{
 		if(tarMgr==null||CommonUtils.isEmpty(tableName)||valueMap.isEmpty()){
 			return ;
 		}
+		if(pTab==null){
+			pTab  = tableName;
+			sameTab = true;
+		}
+		if(!tableName.equalsIgnoreCase(pTab)){
+			sameTab = false;
+			pTab = null;
+			if(tarPks.get(tableName.toUpperCase())!=null){
+				tarPks.remove(tableName.toUpperCase());
+			}
+		}
 		StringBuilder tarSb = new StringBuilder();
 		tarSb.append("INSERT INTO ").append(tableName).append("(");
 		String colName = null;
@@ -241,6 +288,15 @@ public class ETLInsertTask extends AbstractETLTask{
 		Connection srcConn = srcMgr.getConnection();
 		String pkValue = null;
 		List<String> insertPks = new ArrayList<String>();
+		
+		List<String> tarPkList = null;
+		if(tarPks.get(tableName.toUpperCase())!=null&&tarPks.get(tableName.toUpperCase()).size()>0&&sameTab){
+			tarPkList = tarPks.get(tableName.toUpperCase());
+		}else{
+			tarPkList = queryHasPks(tarMgr,tableName,pkName); //获取目标库中已经存在的pk，避免数据重复插入
+			tarPks.put(tableName.toUpperCase(), tarPkList);
+		}
+		
 		try {
 			targetConn.setAutoCommit(false);
 			srcConn.setAutoCommit(false);
@@ -254,6 +310,8 @@ public class ETLInsertTask extends AbstractETLTask{
 				Object value = valueMap.get(colName);
 				if(colName.equals(pkName)){
 					pkValue = (String) value;
+					tarPkList.add(pkValue);
+					tarPks.put(tableName.toUpperCase(), tarPkList);
 					insertPks.add(pkValue);
 				}
 				List<String> ignoreCols = Arrays.asList(new String[]{"ETLSTATUS","ETLPKNAME","ETLTS"});
