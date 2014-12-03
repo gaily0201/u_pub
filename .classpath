@@ -25,5 +25,7 @@
 	</classpathentry>
 	<classpathentry kind="con" path="nc.uap.mde.library.container/Module_Lang_Library"/>
 	<classpathentry kind="con" path="nc.uap.mde.library.container/Generated_EJB"/>
+	<classpathentry kind="lib" path="META-INF/lib/PDFRenderer-0.9.0.jar"/>
+	<classpathentry kind="lib" path="META-INF/lib/jacob.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
