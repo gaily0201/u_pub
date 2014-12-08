@@ -23,7 +23,7 @@ public class TestFileUtil extends AbstractTestCase {
 //		}
 		
 		try {
-			FileUtil.changeCharcter("C:\\Users\\ctt\\git\\u_pub\\pub\\src\\public\\cn\\gaily\\pub\\trigger", new String[]{"java"}, "UTF-8", "GBK");
+			FileUtil.changeCharcter("C:\\Users\\ctt\\git\\u_pub\\pub\\src\\public\\com\\jacob\\com\\a", new String[]{"java"}, "GBK", "UTF-8");
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
