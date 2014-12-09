@@ -18,11 +18,9 @@ import cn.gaily.base.service.IBaseService;
 
 /**
  * <p>Title: BaseServiceProxy</P>
- * <p>Description: 动态人员信息库基础代理类</p>
+ * <p>Description: 基础代理类</p>
  * <p>Copyright: Copyright (c) 2013</p>
- * @author zhulb
  * @version 1.0
- * @since 2013-9-7
  */
 public abstract class BaseServiceProxy<T extends AbstractBill> implements IDataOperationService, IQueryService, IPaginationQueryService, ISingleBillService<T>, IPageQueryService {
 
