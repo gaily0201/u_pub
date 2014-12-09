@@ -1,5 +1,6 @@
-package cn.gaily.pub.util;
+package cn.gaily.base.ui.util;
 
+import cn.gaily.pub.util.ExcelExporter;
 import nc.bs.framework.common.NCLocator;
 import nc.bs.logging.Logger;
 import nc.itf.pubapp.pub.smart.IBillQueryService;

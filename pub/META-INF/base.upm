@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="gbk"?>
+<module name="pub">
+	<public>
+		<component priority="0" singleton="true" remote="true" tx="CMT" supportAlias="true" accessProtected="false">
+			<interface>cn.gaily.base.service.IBaseService</interface>
+			<implementation>cn.gaily.base.service.BaseServiceImpl</implementation>
+		</component>
+	</public>
+</module>

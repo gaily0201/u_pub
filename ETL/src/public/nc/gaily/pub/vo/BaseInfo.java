@@ -9,6 +9,7 @@ import nc.vo.pub.lang.UFDouble;
 import nc.vo.pubapp.pattern.model.meta.entity.vo.VOMetaFactory;
 
 public class BaseInfo extends SuperVO {
+	
 /**
 *批量大小
 */
