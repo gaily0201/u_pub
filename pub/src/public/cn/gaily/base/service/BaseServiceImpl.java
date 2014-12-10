@@ -1,12 +1,7 @@
 package cn.gaily.base.service;
 
-import java.lang.reflect.Array;
-import java.sql.CallableStatement;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.List;
+
 import nc.impl.pubapp.pattern.data.bill.BillDelete;
 import nc.impl.pubapp.pattern.data.bill.BillInsert;
 import nc.impl.pubapp.pattern.data.bill.BillLazyQuery;
@@ -22,9 +17,6 @@ import nc.impl.pubapp.pattern.rule.ICompareRule;
 import nc.impl.pubapp.pattern.rule.IRule;
 import nc.impl.pubapp.pattern.rule.processer.AroundProcesser;
 import nc.impl.pubapp.pattern.rule.processer.CompareAroundProcesser;
-import nc.jdbc.framework.PersistenceManager;
-import nc.jdbc.framework.exception.DbException;
-import nc.jdbc.framework.exception.OracleException;
 import nc.ui.querytemplate.querytree.IQueryScheme;
 import nc.vo.pub.BusinessException;
 import nc.vo.pub.IAttributeMeta;
@@ -41,8 +33,8 @@ import nc.vo.pubapp.pattern.exception.ExceptionUtils;
 import nc.vo.pubapp.pattern.model.entity.bill.AbstractBill;
 import nc.vo.pubapp.pattern.model.meta.entity.bill.IBillMeta;
 import nc.vo.pubapp.query2.sql.process.QuerySchemeProcessor;
-import org.apache.commons.lang.ArrayUtils;
-
+import nc.vo.wfengine.core.application.IWorkflowGadget;
+import nc.vo.wfengine.core.application.WfGadgetContext;
 import cn.gaily.pub.util.CommonUtils;
 
 /**
@@ -51,7 +43,7 @@ import cn.gaily.pub.util.CommonUtils;
  * <p>Copyright: Copyright (c) 2013</p>
  * @version 1.0
  */
-public class BaseServiceImpl implements IBaseService {
+public class BaseServiceImpl implements IBaseService, IWorkflowGadget {
 	
 	@Override
 	public <T extends SuperVO> T[] save(T[] vos) throws BusinessException{
@@ -924,6 +916,26 @@ public class BaseServiceImpl implements IBaseService {
 		BillUpdate<T> update = new BillUpdate<T>();
 	    T[] returnVos = update.update(clientFullVOs, originBills);
 	    return returnVos;
+	}
+
+	@Override
+	public Object doAfterRunned(WfGadgetContext gc) throws BusinessException {
+		return null;
+	}
+
+	@Override
+	public Object undoAfterRunned(WfGadgetContext gc) throws BusinessException {
+		return null;
+	}
+
+	@Override
+	public Object doBeforeActive(WfGadgetContext gc) throws BusinessException {
+		return null;
+	}
+	
+	@Override
+	public Object undoBeforeActive(WfGadgetContext gc) throws BusinessException {
+		return null;
 	}
 
 
