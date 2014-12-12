@@ -6,7 +6,7 @@ import cn.gaily.pub.util.CommonUtils;
 public class TestCommonUtil extends AbstractTestCase {
 
 	
-	public void CommonUtils(){
+	public void test(){
 		
 		
 		String date1 = CommonUtils.getCurrentDate(CommonUtils.DATE_FORMATER_YYYY);
@@ -19,6 +19,7 @@ public class TestCommonUtil extends AbstractTestCase {
 		System.out.println(date3);
 		System.out.println(date4);
 		System.out.println(date5);
+		System.out.println("#############################################");
 		/**
 		 	2014
 			2014-09-14
@@ -42,6 +43,7 @@ public class TestCommonUtil extends AbstractTestCase {
 		System.out.println(b3);
 		System.out.println(b4);
 		System.out.println(b5);
+		System.out.println("#############################################");
 		/**
 		 	true
 			true
@@ -51,6 +53,17 @@ public class TestCommonUtil extends AbstractTestCase {
 		 */
 		
 		System.out.println(CommonUtils.formatDate("20140914"));
+		
+		
+		System.out.println("#############################################");
+		
+		System.out.println(CommonUtils.isValidChn("chinese"));
+		System.out.println(CommonUtils.isValidChn("жа"));
+		
+		System.out.println(CommonUtils.isValidInt(-11));
+		System.out.println(CommonUtils.isValidFloat(1f));
+		System.out.println(CommonUtils.isValidEmail("446029658qq.com"));
+		
 	}
 	
 }

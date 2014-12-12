@@ -105,6 +105,7 @@ public class CommonUtils {
 	 */
 	public static final String NUMBER_NEGATIVE_FLOAT_PATTERN= "^((-\\d+(\\.\\d+)?)|(0+(\\.0+)?))$";
 	
+	
 	/**
 	 * 配置文件流
 	 */
@@ -124,13 +125,13 @@ public class CommonUtils {
 	 * @since  2014-9-28
 	 * <p> history 2014-9-28 xiaoh  创建   <p>
 	 */
-	public static boolean isValidFloat(String number){
-		if(isEmpty(number)){
+	public static boolean isValidFloat(float number){
+		if(isEmpty(String.valueOf(number))){
 			return false;
 		}
-		if(number.matches(NUMBER_NORMAL_FLOAT_PATTERN)){
+		if(String.valueOf(number).matches(NUMBER_NORMAL_FLOAT_PATTERN)){
 			return true;
-		}else if(number.matches(NUMBER_NEGATIVE_FLOAT_PATTERN)){
+		}else if(String.valueOf(number).matches(NUMBER_NEGATIVE_FLOAT_PATTERN)){
 			return true;
 		}
 		return false;
@@ -145,11 +146,11 @@ public class CommonUtils {
 	 * @since  2014-9-28
 	 * <p> history 2014-9-28 xiaoh  创建   <p>
 	 */
-	public static boolean isValidInt(String number){
-		if(isEmpty(number)){
+	public static boolean isValidInt(int number){
+		if(isEmpty(String.valueOf(number))){
 			return true;
 		}
-		if(number.matches(NUMBER_INT_PATTERN)){
+		if(String.valueOf(number).matches(NUMBER_INT_PATTERN)){
 			return true;
 		}
 		return false;
@@ -290,6 +291,39 @@ public class CommonUtils {
 	
 	
 	/**
+	 * <p>方法名称：isValidChn</p>
+	 * <p>方法描述：校验是否是中文字符</p>
+	 * @param str
+	 * @author xiaoh
+	 * @since  2014-12-12
+	 */
+	public static final boolean isValidChn(String str){
+		return str.matches("[\u4e00-\u9fa5]");
+	}
+
+	/**
+	 * <p>方法名称：isEmptyLine</p>
+	 * <p>方法描述：校验是否是空白行</p>
+	 * @param str
+	 * @return
+	 * @since  2014-12-12
+	 */
+	public static final boolean isEmptyLine(String str){
+		return str.matches("\\n\\s*\\r");
+	}
+	
+	/**
+	 * <p>方法名称：isValidEmail</p>
+	 * <p>方法描述：校验是否是合法的emil地址</p>
+	 * @param str
+	 * @return
+	 * @author xiaoh
+	 */
+	public static final boolean isValidEmail(String str){
+		return str.matches("\\w+([-+.]\\w+)*@\\w+([-.]\\w+)*\\.\\w+([-.]\\w+)*");
+	}
+	
+	/**
 	 * <p>方法名称：arrayToList</p>
 	 * <p>方法描述：将数据转换为List</p>
 	 * @param array
@@ -308,73 +342,6 @@ public class CommonUtils {
 		return list;
 	}
 	
-	/**
-	 * <p>方法名称：isValidScene</p>
-	 * <p>方法描述：是否为合法场景</p>
-	 * @param scene 场景
-	 * @return
-	 * @author xiaoh
-	 * @since  2014-9-30
-	 * <p> history 2014-9-30 xiaoh  创建   <p>
-	 */
-	public static boolean isValidScene(Integer scene){
-		if(scene==null){
-			return false;
-		}
-		if(scene!=0&&scene!=1&&scene!=2&&scene!=3&&scene!=4){
-			return false;
-		}
-		return true;
-	}
-	
-	/**
-	 * <p>方法名称：doCompressImage</p>
-	 * <p>方法描述：创建缩略图</p>
-	 * @param image   图片??
-	 * @param width   长度
-	 * @param height  高度
-	 * @param out     输出??
-	 * @return		    字节??
-	 * @author xiaoh
-	 * @since  2014-10-10
-	 * <p> history 2014-10-10 xiaoh  创建   <p>
-	 */
-	public static ByteArrayInputStream doCompressImage(Blob blob, double width, double height, ByteArrayOutputStream out) {
-		ByteArrayInputStream bin = null;
-		try {
-			InputStream in = blob.getBinaryStream();
-			BufferedInputStream ins = new BufferedInputStream(in);
-			BufferedImage image=ImageIO.read(ins); 
-			
-			if (image != null) {
-				ImageIcon icon = new ImageIcon(image);
-				double rateh = icon.getIconHeight() / height;
-				double ratew = icon.getIconWidth() / width;
-				double rate = (rateh > ratew) ? rateh : ratew;
-				int new_w = (int) (icon.getIconWidth() / rate);
-				int new_h = (int) (icon.getIconHeight() / rate);
-				BufferedImage tag = new BufferedImage(new_w, new_h, BufferedImage.TYPE_INT_RGB);
-				tag.getGraphics().drawImage(image, 0, 0, new_w, new_h, null);
-
-				JPEGImageEncoder encoder = JPEGCodec.createJPEGEncoder(out);
-				JPEGEncodeParam jep = JPEGCodec.getDefaultJPEGEncodeParam(tag);
-				/* 压缩质量 */
-				jep.setQuality(1f, true);
-				encoder.encode(tag, jep);
-				
-				bin = new ByteArrayInputStream(out.toByteArray());
-				{
-					return bin;
-				}
-
-			}
-		} catch (Exception e) {
-			Logger.error(e);
-		} finally {
-
-		}
-		return null;
-	}
 	
 	public String getProperty(String fileName,String key){
 		Properties prop = null;
