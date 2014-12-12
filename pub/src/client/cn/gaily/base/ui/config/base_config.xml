@@ -251,6 +251,49 @@
 		<property name="model" ref="manageAppModel" />
 		<property name="handlerGroup">
 			<list>
+				<!-- 表体字段编辑前事件 -->
+				<bean class="nc.ui.pubapp.uif2app.event.EventHandlerGroup">
+					<property name="event" value="nc.ui.pubapp.uif2app.event.card.CardBodyBeforeEditEvent" />
+					<property name="picky" ref="childrenPicky" />
+					<property name="handler">
+						<bean class="cn.gaily.base.ui.handler.BaseBodyBeforeEditHandler" />
+					</property>
+				</bean>
+
+				<!-- 表体字段编辑后事件 -->
+				<bean class="nc.ui.pubapp.uif2app.event.EventHandlerGroup">
+					<property name="event" value="nc.ui.pubapp.uif2app.event.card.CardBodyAfterEditEvent" />
+					<property name="picky" ref="childrenPicky" />
+					<property name="handler">
+						<bean class="cn.gaily.base.ui.handler.BaseBodyAfterEditHandler" />
+					</property>
+				</bean>	
+				
+				<!-- 表头表尾字段编辑前事件 -->
+				<bean class="nc.ui.pubapp.uif2app.event.EventHandlerGroup">
+					<property name="event" value="nc.ui.pubapp.uif2app.event.card.CardHeadTailBeforeEditEvent" />
+					<property name="handler">
+						<bean class="cn.gaily.base.ui.handler.BaseHeadTailBeforeEditHandler" />
+					</property>
+				</bean>
+				
+				<!-- 新增事件 -->
+				<bean class="nc.ui.pubapp.uif2app.event.EventHandlerGroup">
+					<property name="event" value="nc.ui.pubapp.uif2app.event.billform.AddEvent" />
+					<property name="handler">
+						<bean class="cn.gaily.base.ui.handler.BaseAddHandler" />
+					</property>
+				</bean>
+				
+				<!-- 组织改变事件 -->
+				<bean class="nc.ui.pubapp.uif2app.event.EventHandlerGroup">
+					<property name="event" value="nc.ui.pubapp.uif2app.event.OrgChangedEvent" />
+					<property name="handler">
+						<bean class="cn.gaily.base.ui.handler.BaseOrgChangedHandler" >
+						</bean>
+					</property>
+				</bean>
+			
 				<!-- 表头表尾字段编辑后事件 -->
 				<bean class="nc.ui.pubapp.uif2app.event.EventHandlerGroup">
 					<property name="event" value="nc.ui.pubapp.uif2app.event.card.CardHeadTailAfterEditEvent" />
@@ -258,6 +301,17 @@
 						<bean class="cn.gaily.base.ui.handler.BaseHeadTailAfterEditHandler" /> <!-- ##继承 注入自己的处理器 -->
 					</property>
 				</bean>
+				
+				 <!-- UI状态改变事件 -->
+				<bean class="nc.ui.pubapp.uif2app.event.EventHandlerGroup">
+					<property name="event" value="nc.ui.pubapp.uif2app.event.AppUiStateChangeEvent" />
+					<property name="handler">
+						<bean class="cn.gaily.base.ui.handler.BasePanelStateHandler">
+							<property name="eidtor" ref="billFormEditor"/>	
+						</bean>
+					</property>
+				</bean>
+				
 			</list>
 		</property>
 	</bean>
