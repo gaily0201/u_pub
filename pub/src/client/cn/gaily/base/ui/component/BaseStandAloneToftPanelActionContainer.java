@@ -78,8 +78,7 @@ public class BaseStandAloneToftPanelActionContainer extends StandAloneToftPanelA
 				@Override
 				public void run() {
 					BaseStandAloneToftPanelActionContainer.super
-							.handleEvent(new AppEvent(
-									AppEventConst.UISTATE_CHANGED));
+							.handleEvent(new AppEvent(AppEventConst.UISTATE_CHANGED));
 				}
 			});
 		} else {

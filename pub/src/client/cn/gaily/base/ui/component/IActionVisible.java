@@ -6,7 +6,6 @@ package cn.gaily.base.ui.component;
  * 					该接口需配合BaseStandAloneToftPanelActionContainer一起使用。
  * </p>
  * @version 1.0
- * @since 2014-4-15
  */
 public interface IActionVisible {
 
