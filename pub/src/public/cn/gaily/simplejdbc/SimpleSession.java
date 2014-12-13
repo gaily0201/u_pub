@@ -60,7 +60,7 @@ public class SimpleSession {
 	 */
 	public static boolean checkHasTable(SimpleDSMgr mgr, String tableName){
 		if(mgr==null||mgr.conns.size()<=0){
-			throw new RuntimeException("校验表是否存在时传入的连接不存在");
+			throw new RuntimeException(tableName+"校验表是否存在时传入的连接不存在");
 		}
 		String sql = "SELECT COUNT(1) FROM USER_TABLES WHERE TABLE_NAME=?";
 		PreparedStatement pst = null;
@@ -75,10 +75,33 @@ public class SimpleSession {
 			}
 		} catch (SQLException e) {
 			e.printStackTrace();
-			throw new RuntimeException("校验表是否存在时查询数据出错");
+			throw new RuntimeException(tableName+"校验表是否存在时查询数据出错");
 		}finally{
 			SimpleJdbc.release(null, pst, rs);
 			mgr.release(conn);
+		}
+		return false;
+	}
+	
+	public static boolean checkHasTable(Connection conn, String tableName){
+		if(conn==null){
+			throw new RuntimeException(tableName+"校验表是否存在时传入的连接不存在");
+		}
+		String sql = "SELECT COUNT(1) FROM USER_TABLES WHERE TABLE_NAME=?";
+		PreparedStatement pst = null;
+		ResultSet rs = null;
+		try {
+			pst = conn.prepareStatement(sql);
+			pst.setString(1, tableName.toUpperCase().trim());
+			rs = pst.executeQuery();
+			if(rs.next() && 1<=rs.getInt(1)){
+				return true;
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+			throw new RuntimeException(tableName+"校验表是否存在时查询数据出错");
+		}finally{
+			SimpleJdbc.release(null, pst, rs);
 		}
 		return false;
 	}
@@ -96,7 +119,7 @@ public class SimpleSession {
 	 */
 	public static boolean checkHasColumn(SimpleDSMgr mgr, String tableName,String columnName){
 		if(mgr==null||mgr.conns.size()<=0){
-			throw new RuntimeException("校验列是否存在时传入的连接不存在");
+			throw new RuntimeException(tableName+"校验列是否存在时传入的连接不存在");
 		}
 		String sql = "SELECT COUNT(1) FROM USER_TAB_COLS  WHERE TABLE_NAME=? AND COLUMN_NAME=? ";
 		PreparedStatement pst = null;
@@ -112,7 +135,7 @@ public class SimpleSession {
 			}
 		} catch (SQLException e) {
 			e.printStackTrace();
-			throw new RuntimeException("校验列是否存时查询数据出错");
+			throw new RuntimeException(tableName+"校验列是否存时查询数据出错");
 		}finally{
 			SimpleJdbc.release(null, pst, rs);
 			mgr.release(conn);
@@ -123,7 +146,7 @@ public class SimpleSession {
 	
 	public static int getRecordCount(SimpleDSMgr mgr, String tableName){
 		if(mgr==null||mgr.conns.size()<=0){
-			throw new RuntimeException("获取记录数时传入的连接不存在");
+			throw new RuntimeException(tableName+"获取记录数时传入的连接不存在");
 		}
 		Connection conn = mgr.getConnection();
 		String sql = "SELECT COUNT(1) FROM "+tableName;
@@ -137,7 +160,7 @@ public class SimpleSession {
 			}
 		} catch (SQLException e) {
 			e.printStackTrace();
-			throw new RuntimeException("获取记录数时查询数据出错"+e);
+			throw new RuntimeException(tableName+"获取记录数时查询数据出错"+e);
 		}finally{
 			SimpleJdbc.release(null, pst, rs);
 			mgr.release(conn);

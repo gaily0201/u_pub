@@ -15,7 +15,7 @@
     </test>
     <funnodes/>
   </BusinessComponet>
-  <BusinessComponet name="ETL" dispname="数据迁移">
+  <BusinessComponet name="uap" dispname="uap补丁">
     <public>
       <src name="src/public"/>
     </public>

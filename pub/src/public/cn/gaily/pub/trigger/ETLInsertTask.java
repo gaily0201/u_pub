@@ -71,7 +71,7 @@ public class ETLInsertTask extends AbstractETLTask{
 		}
 		
 		if(srcMgr==null||tarMgr==null||CommonUtils.isEmpty(tableName)){
-			throw new RuntimeException("新增数据库操作参数出错");
+			throw new RuntimeException(tableName+"新增数据库操作参数出错");
 		}
 		StringBuilder tarSb = new StringBuilder();
 		tarSb.append("INSERT INTO ").append(tableName).append("(");
@@ -161,10 +161,10 @@ public class ETLInsertTask extends AbstractETLTask{
 				srcConn.rollback();
 			} catch (SQLException e1) {
 				e1.printStackTrace();
-				throw new RuntimeException("回滚数据异常"+e);
+				throw new RuntimeException(tableName+"回滚数据异常"+e);
 			}
 			e.printStackTrace();
-			throw new RuntimeException("插入数据库异常"+e);
+			throw new RuntimeException(tableName+"插入数据库异常"+e);
 		}finally{
 			SimpleJdbc.release(null, pst, null);
 			tarMgr.release(targetConn);
@@ -222,7 +222,7 @@ public class ETLInsertTask extends AbstractETLTask{
 	public void doexecute(SimpleDSMgr srcMgr, SimpleDSMgr tarMgr, String tableName, String pkName, Map<String,Object> valueMap, Map<String,String> colNameTypeMap){
 		
 		if(srcMgr==null||tarMgr==null||CommonUtils.isEmpty(tableName)){
-			throw new RuntimeException("新增数据库操作参数出错");
+			throw new RuntimeException(tableName+"新增数据库操作参数出错");
 		}
 
 		//1、停用目标库触发器
@@ -310,28 +310,33 @@ public class ETLInsertTask extends AbstractETLTask{
 				Object value = valueMap.get(colName);
 				if(colName.equals(pkName)){
 					pkValue = (String) value;
+					insertPks.add(pkValue);
+					if(tarPkList.contains(pkValue)){
+						srcConn = delTemp(pkName, insertPks, tablePrefix+tableName, srcConn, NEW, false);  //2014-12-2插入时对已存在的主键，删除该条临时表记录
+						srcConn.commit();
+						return;
+					}
 					tarPkList.add(pkValue);
 					tarPks.put(tableName.toUpperCase(), tarPkList);
-					insertPks.add(pkValue);
 				}
 				List<String> ignoreCols = Arrays.asList(new String[]{"ETLSTATUS","ETLPKNAME","ETLTS"});
 				pst =setValues(pst, colName, colType, value, ignoreCols);  //设置列值
 			}
+			srcConn = delTemp(pkName, insertPks, tablePrefix+tableName, srcConn, NEW, false); //删除出本次操作临时表数据
 			pst.execute();
 			System.out.println("insert 1 record");
-			srcConn = delTemp(pkName, insertPks, tablePrefix+tableName, srcConn, NEW, false); //删除出本次操作临时表数据
-			targetConn.commit();
 			srcConn.commit();
+			targetConn.commit();
 		} catch (SQLException e) {
 			try {
 				targetConn.rollback();
 				srcConn.commit();
 			} catch (SQLException e1) {
 				e1.printStackTrace();
-				throw new RuntimeException("回滚数据异常"+e);
+				throw new RuntimeException(tableName+"回滚数据异常"+e);
 			}
 			e.printStackTrace();
-			throw new RuntimeException("插入数据库异常"+e);
+			throw new RuntimeException(tableName+",pk:"+pkValue+"插入数据库异常"+e);
 		}finally{
 			SimpleJdbc.release(null, pst, null);
 			tarMgr.release(targetConn);

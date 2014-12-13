@@ -20,7 +20,7 @@ import cn.gaily.simplejdbc.SimpleJdbc;
  * @version 1.0
  * @since 2014-10-27
  */
-public class TriggerGenerator {
+public class TriggerManager {
 
 	public static final int NEW = 1;
 	public static final int UPDATE = 2;
@@ -58,6 +58,53 @@ public class TriggerGenerator {
 			execSql(sql);
 		}
 		System.out.println(tableName+"->build Sussesful!");
+	}
+	
+	
+	/**
+	 * <p>方法名称：drop</p>
+	 * <p>方法描述：删除触发器、临时表、配置表</p>
+	 * @param mgr
+	 * @param tableName
+	 * @author xiaoh
+	 * @since  2014-11-28
+	 * <p> history 2014-11-28 xiaoh  创建   <p>
+	 */
+	public boolean drop(SimpleDSMgr mgr, String tableName){
+		if(mgr.conns.size()<=0||CommonUtils.isEmpty(tableName)){
+			return false;
+		}
+		String sql1=  "DROP TRIGGER XFL_"+tableName.trim().toUpperCase()+"_1";
+		String sql2=  "DROP TRIGGER XFL_"+tableName.trim().toUpperCase()+"_2";
+		String sql3=  "DROP TRIGGER XFL_"+tableName.trim().toUpperCase()+"_3";
+		
+		String sql4 = "DROP TABLE XFL_"+tableName.trim().toUpperCase();
+		String sql5 = "DELETE FROM XFL_TABSTATUS WHERE TABLENAME='"+tableName.trim().toUpperCase()+"'";
+		
+		Connection conn = mgr.getConnection();
+		Statement st = null;
+		try {
+			conn.setAutoCommit(false);
+			st = conn.createStatement();
+			st.executeUpdate(sql1);
+			st.executeUpdate(sql2);
+			st.executeUpdate(sql3);
+			st.executeUpdate(sql4);
+			st.executeUpdate(sql5);
+			conn.commit();
+			return true;
+		} catch (SQLException e) {
+			e.printStackTrace();
+			try {
+				conn.rollback();
+			} catch (SQLException e1) {
+				e1.printStackTrace();
+			}
+		} finally{
+			SimpleJdbc.release(null, st, null);
+			mgr.release(conn);
+		}
+		return true;
 	}
 	
 	/**
@@ -227,7 +274,7 @@ public class TriggerGenerator {
 		}
 		sb.append(tableName).append(" FOR EACH ROW DECLARE ACTION NUMBER; PKNAME VARCHAR2(50);");
 		sb.append("BEGIN  SELECT STATUS INTO ACTION  FROM XFL_TABSTATUS WHERE TABLENAME='");
-		sb.append(tableName).append("'; IF(ACTION=1) THEN ");  //status
+		sb.append(tableName).append("'; IF(ACTION=1 OR ACTION = 2) THEN ");  //status
 		sb.append(" SELECT A.COLUMN_NAME INTO PKNAME FROM USER_CONS_COLUMNS A, USER_CONSTRAINTS B");
 		sb.append(" WHERE A.CONSTRAINT_NAME = B.CONSTRAINT_NAME");
 		sb.append(" AND B.CONSTRAINT_TYPE = 'P'  AND A.TABLE_NAME ='");

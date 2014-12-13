@@ -1,11 +1,8 @@
 package cn.gaily.pub.test;
 
-import java.sql.Connection;
 import nc.bs.framework.test.AbstractTestCase;
 import cn.gaily.pub.trigger.DefaultETLTask;
 import cn.gaily.pub.trigger.AbstractETLTask;
-import cn.gaily.pub.trigger.TriggerGenerator;
-import cn.gaily.simplejdbc.SimpleJdbc;
 import cn.gaily.simplejdbc.SimpleDSMgr;
 
 public class TestTriggerGenerator extends AbstractTestCase {

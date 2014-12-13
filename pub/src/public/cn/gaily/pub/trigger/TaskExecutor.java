@@ -35,8 +35,6 @@ public class TaskExecutor {
 		execute(remote, local);
 	}
 	
-//	ISynMaintain service = NCLocator.getInstance().lookup(ISynMaintain.class);
-	
 	/**
 	 * <p>方法名称：execute</p>
 	 * <p>方法描述：任务执行方法入口</p>
@@ -146,50 +144,50 @@ public class TaskExecutor {
 		}
 		
 		ETLLogVO vo = null;
-//		if(isSyn){
-//			vo = new ETLLogVO();
-//			vo.setSrcdbname(srcMgr.getDbName()).setSrcip(srcMgr.getIp()).setSrcport(srcMgr.getPort()).setSrcusername(srcMgr.getUserName());
-//			vo.setDestdbname(destMgr.getDbName()).setDestip(destMgr.getIp()).setDestport(destMgr.getPort()).setDestusername(destMgr.getUserName());
-//			vo.setTABLENAME(tableName);
-//			vo.setType("数据同步");
-//			vo.setResult(add+"");
-//			vo.setStarttime(startTtime);
-//			vo.setEndtime(endtime);
-//			log(srcMgr, vo);
-//		}
-//		if(add!=0){
-//			vo = new ETLLogVO();
-//			vo.setSrcdbname(srcMgr.getDbName()).setSrcip(srcMgr.getIp()).setSrcport(srcMgr.getPort()).setSrcusername(srcMgr.getUserName());
-//			vo.setDestdbname(destMgr.getDbName()).setDestip(destMgr.getIp()).setDestport(destMgr.getPort()).setDestusername(destMgr.getUserName());
-//			vo.setTABLENAME(tableName);
-//			vo.setType("新增");
-//			vo.setResult(add+"");
-//			vo.setStarttime(startTtime);
-//			vo.setEndtime(endtime);
-//			log(srcMgr, vo);
-//		}
-//		if(update!=0){
-//			vo = new ETLLogVO();
-//			vo.setSrcdbname(srcMgr.getDbName()).setSrcip(srcMgr.getIp()).setSrcport(srcMgr.getPort()).setSrcusername(srcMgr.getUserName());
-//			vo.setDestdbname(destMgr.getDbName()).setDestip(destMgr.getIp()).setDestport(destMgr.getPort()).setDestusername(destMgr.getUserName());
-//			vo.setTABLENAME(tableName);
-//			vo.setType("更新");
-//			vo.setStarttime(startTtime);
-//			vo.setEndtime(endtime);
-//			vo.setResult(update+"");
-//			log(srcMgr, vo);
-//		}
-//		if(delete!=0){
-//			vo = new ETLLogVO();
-//			vo.setSrcdbname(srcMgr.getDbName()).setSrcip(srcMgr.getIp()).setSrcport(srcMgr.getPort()).setSrcusername(srcMgr.getUserName());
-//			vo.setDestdbname(destMgr.getDbName()).setDestip(destMgr.getIp()).setDestport(destMgr.getPort()).setDestusername(destMgr.getUserName());
-//			vo.setTABLENAME(tableName);
-//			vo.setType("删除");
-//			vo.setResult(delete+"");
-//			vo.setStarttime(startTtime);
-//			vo.setEndtime(endtime);
-//			log(srcMgr, vo);
-//		}
+		if(isSyn){
+			vo = new ETLLogVO();
+			vo.setSrcdbname(srcMgr.getDbName()).setSrcip(srcMgr.getIp()).setSrcport(srcMgr.getPort()).setSrcusername(srcMgr.getUserName());
+			vo.setDestdbname(destMgr.getDbName()).setDestip(destMgr.getIp()).setDestport(destMgr.getPort()).setDestusername(destMgr.getUserName());
+			vo.setTABLENAME(tableName);
+			vo.setType("数据同步");
+			vo.setResult(add+"");
+			vo.setStarttime(startTtime);
+			vo.setEndtime(endtime);
+			log(srcMgr, vo);
+		}
+		if(add!=0){
+			vo = new ETLLogVO();
+			vo.setSrcdbname(srcMgr.getDbName()).setSrcip(srcMgr.getIp()).setSrcport(srcMgr.getPort()).setSrcusername(srcMgr.getUserName());
+			vo.setDestdbname(destMgr.getDbName()).setDestip(destMgr.getIp()).setDestport(destMgr.getPort()).setDestusername(destMgr.getUserName());
+			vo.setTABLENAME(tableName);
+			vo.setType("新增");
+			vo.setResult(add+"");
+			vo.setStarttime(startTtime);
+			vo.setEndtime(endtime);
+			log(srcMgr, vo);
+		}
+		if(update!=0){
+			vo = new ETLLogVO();
+			vo.setSrcdbname(srcMgr.getDbName()).setSrcip(srcMgr.getIp()).setSrcport(srcMgr.getPort()).setSrcusername(srcMgr.getUserName());
+			vo.setDestdbname(destMgr.getDbName()).setDestip(destMgr.getIp()).setDestport(destMgr.getPort()).setDestusername(destMgr.getUserName());
+			vo.setTABLENAME(tableName);
+			vo.setType("更新");
+			vo.setStarttime(startTtime);
+			vo.setEndtime(endtime);
+			vo.setResult(update+"");
+			log(srcMgr, vo);
+		}
+		if(delete!=0){
+			vo = new ETLLogVO();
+			vo.setSrcdbname(srcMgr.getDbName()).setSrcip(srcMgr.getIp()).setSrcport(srcMgr.getPort()).setSrcusername(srcMgr.getUserName());
+			vo.setDestdbname(destMgr.getDbName()).setDestip(destMgr.getIp()).setDestport(destMgr.getPort()).setDestusername(destMgr.getUserName());
+			vo.setTABLENAME(tableName);
+			vo.setType("删除");
+			vo.setResult(delete+"");
+			vo.setStarttime(startTtime);
+			vo.setEndtime(endtime);
+			log(srcMgr, vo);
+		}
 
 	}
 

@@ -5,11 +5,12 @@ import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import oracle.jdbc.driver.OracleDriver;
 
 /**
  * <p>Title: JdbcUtils</P>
- * <p>Description: 用于连接远程库的一个简单jdbc工具</p>
- * <p>Copyright: 用友政务软件有限公司 Copyright (c) 2014</p>
+ * <p>Description: 閿熸枻鎷烽敓鏂ゆ嫹閿熸枻鎷烽敓鏂ゆ嫹杩滈敓鏁欏尅鎷烽敓鎻紮鎷烽敓鏂ゆ嫹閿熺怠dbc閿熸枻鎷烽敓鏂ゆ嫹</p>
+ * <p>Copyright: 閿熸枻鎷烽敓鏂ゆ嫹閿熸枻鎷烽敓鏂ゆ嫹閿熸枻鎷烽敓鏂ゆ嫹閿熸枻鎷疯柊閿熷壙锟紺opyright (c) 2014</p>
  * @author xiaoh
  * @version 1.0
  * @since 2014-8-6
@@ -35,7 +36,6 @@ public class SimpleJdbc{
 			Class.forName(DRIVER);
 		} catch (ClassNotFoundException e) {
 			e.printStackTrace();
-			release(conn, st, rs);
 		}
 	}
 	
@@ -71,16 +71,14 @@ public class SimpleJdbc{
 	
 	public static Connection getConnection(String userName, String password, String ip ,String dbName, String port){
 		conn = null;
+		String url = "jdbc:oracle:thin:@"+ip+":"+port+":"+dbName.toUpperCase();
 		try {
-			try {
-				Class.forName(DRIVER);
-			} catch (ClassNotFoundException e) {
-				e.printStackTrace();
-			}
-			String url = "jdbc:oracle:thin:@"+ip+":"+port+":"+dbName.toUpperCase();
+			Class.forName(DRIVER);
 			conn = DriverManager.getConnection(url, userName, password);
 		} catch (SQLException e) {
-			release(conn, st, rs);
+			e.printStackTrace();
+		} catch (ClassNotFoundException e) {
+			e.printStackTrace();
 		}
 		return conn;
 	}
@@ -90,8 +88,8 @@ public class SimpleJdbc{
 		return conn;
 	}
 	
-	public static boolean testConnection(String userName, String password, String ip ,String dbName){
-		conn = getConnection(userName, password, ip, dbName);
+	public static boolean testConnection(String userName, String password, String ip ,String dbName, String port){
+		conn = getConnection(userName, password, ip, dbName, port);
 		if(conn==null){
 			return false;
 		}

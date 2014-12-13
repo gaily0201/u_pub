@@ -81,7 +81,7 @@ public class ETLUpdateTask extends AbstractETLTask{
 				valueMap = valueList.poll();
 				pkValue = (String) valueMap.get(pkName);  //TODO pk可能为int或者其他类型
 				if(CommonUtils.isEmpty(pkValue)){
-					throw new RuntimeException("更新数据未获取到主键");
+					throw new RuntimeException(tableName+"更新数据未获取到主键");
 				}
 				for(Iterator it=colNameTypeMap.entrySet().iterator();it.hasNext();){
 					entry = (Entry<String, String>) it.next();
@@ -115,10 +115,10 @@ public class ETLUpdateTask extends AbstractETLTask{
 				srcConn.rollback();
 			} catch (SQLException e1) {
 				e1.printStackTrace();
-				throw new RuntimeException("更新数据库回滚数据出错"+e1);
+				throw new RuntimeException(tableName+"更新数据库回滚数据出错"+e1);
 			}
 			e.printStackTrace();
-			throw new RuntimeException("更新数据库异常"+e);
+			throw new RuntimeException(tableName+"更新数据库异常"+e);
 		}finally{
 			SimpleJdbc.release(null, ipst, null);
 			tarMgr.release(targetConn);
@@ -131,7 +131,7 @@ public class ETLUpdateTask extends AbstractETLTask{
 	@Override
 	public void doexecute(SimpleDSMgr srcMgr, SimpleDSMgr tarMgr, String tableName, String pkName, Map<String,Object> valueMap, Map<String,String> colNameTypeMap) {
 		if(srcMgr==null||tarMgr==null||CommonUtils.isEmpty(tableName)){
-			throw new RuntimeException("更新数据库操作参数出错");
+			throw new RuntimeException(tableName+"更新数据库操作参数出错");
 		}
 
 		//1、停用目标库触发器
@@ -176,7 +176,7 @@ public class ETLUpdateTask extends AbstractETLTask{
 		sb.deleteCharAt(sb.length()-1);
 		String pkValue = (String) valueMap.get(pkName);  //TODO pk可能为int
 		if(CommonUtils.isEmpty(pkValue)){
-			throw new RuntimeException("更新数据未获取到主键");
+			throw new RuntimeException(tableName+"更新数据未获取到主键");
 		}
 		sb.append(" WHERE ").append(pkName).append("='").append(pkValue).append("'");
 		System.out.println(sb);
@@ -209,10 +209,10 @@ public class ETLUpdateTask extends AbstractETLTask{
 				srcConn.rollback();
 			} catch (SQLException e1) {
 				e1.printStackTrace();
-				throw new RuntimeException("更新数据库回滚数据出错"+e1);
+				throw new RuntimeException(tableName+"更新数据库回滚数据出错"+e1);
 			}
 			e.printStackTrace();
-			throw new RuntimeException("更新数据库异常");
+			throw new RuntimeException(tableName+"更新数据库异常");
 		}finally{
 			SimpleJdbc.release(null, ipst, null);
 			tarMgr.release(targetConn);

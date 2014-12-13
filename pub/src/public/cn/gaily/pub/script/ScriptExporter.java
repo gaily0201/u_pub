@@ -23,7 +23,6 @@ import cn.gaily.simplejdbc.SimpleDSMgr;
 import cn.gaily.simplejdbc.SimpleJdbc;
 import cn.gaily.simplejdbc.SimpleSession;
 
-
 /**
  * <p>Title: ScriptExporter</P>
  * <p>Description: 脚本抽取工具</p>
@@ -52,13 +51,13 @@ public class ScriptExporter {
 	 * @since  2014-12-3
 	 * <p> history 2014-12-3 xiaoh  创建   <p>
 	 */
-	public void exportAll(String path){
+	public void exportAll(SimpleDSMgr mgr, String path){
 		if(mgr==null){
 			mgr = getDataSource();
 		}
 		List<String> allTabs = getAllUserTabs(mgr);
 		for(String tab: allTabs){
-			export(path+File.separator+tab.toLowerCase()+".sql", true, tab);
+			export(mgr, path+File.separator+tab.toLowerCase()+".sql", true, tab);
 		}
 	}
 	
@@ -75,8 +74,8 @@ public class ScriptExporter {
 	 * @since  2014-12-3
 	 * <p> history 2014-12-3 xiaoh  创建   <p>
 	 */
-	public void export(String filePath){
-		export(filePath, false, null);
+	public void export(SimpleDSMgr mgr, String filePath){
+		export(mgr, filePath, false, null);
 	}
 	
 	/**
@@ -90,7 +89,7 @@ public class ScriptExporter {
 	 * @since  2014-11-27
 	 * <p> history 2014-11-27 xiaoh  创建   <p>
 	 */
-	public void export(String filePath, boolean isOriginal, String tableName){
+	public void export(SimpleDSMgr mgr, String filePath, boolean isOriginal, String tableName){
 		/**
 		 * 1. 获取所有配置的同步表;
 		 * 2. 分别获取每个同步表对应临时表中的数据;
@@ -128,8 +127,10 @@ public class ScriptExporter {
 				}
 				writeFile(valueList, tab, filePath, isOriginal);
 			}
+			if(!isOriginal){
+				SimpleSession.executeSql(mgr, "TRUNCATE TABLE XFL_"+tab.trim().toUpperCase());
+			}
 		}
-		mgr.realRelease();
 	}
 	
 	
@@ -151,7 +152,7 @@ public class ScriptExporter {
 				System.out.println(sql);
 				write(filePath, sql, true); //写sql
 			}
-			write(filePath, "commit;", true); //写commit
+//			write(filePath, "commit;", true); //写commit
 		}catch(IOException e){
 			e.printStackTrace();
 		}
@@ -191,7 +192,7 @@ public class ScriptExporter {
 			pkColumn = String.valueOf(valueMap.get("ETLPKNAME"));
 		}
 		String pkValue = String.valueOf(valueMap.get(pkColumn));
-		StringBuilder sb = new StringBuilder("DELETE FROM").append(tableName).append(" WHERE ").append(pkColumn);
+		StringBuilder sb = new StringBuilder("DELETE FROM ").append(tableName).append(" WHERE ").append(pkColumn);
 		sb.append("='").append(pkValue).append("';");
 		return sb.toString();
 	}
@@ -221,11 +222,18 @@ public class ScriptExporter {
 			}
 			colValue = entry.getValue();
 			colType = colNameTypeMap.get(colName);
-			if("VARCHAR2".equals(colType)||"NVARCHAR2".equals(colType)||"CHAR".equals(colType)){
+			if("VARCHAR2".equals(colType)||"NVARCHAR2".equals(colType)){
 				if("NULL".equalsIgnoreCase(String.valueOf(colValue))){
 					sb.append(colName).append("=").append(colValue).append(",");
 				}else{
 					sb.append(colName).append("='").append(colValue).append("',");
+				}
+				
+			}else if("CHAR".equals(colType)){
+				if("NULL".equalsIgnoreCase(String.valueOf(colValue))){
+					sb.append(colName).append("=").append(String.valueOf(colValue).trim()).append(",");
+				}else{
+					sb.append(colName).append("='").append(String.valueOf(colValue).trim()).append("',");
 				}
 			}else if("FLOAT".equals(colType)||"NUMBER".equals(colType)){
 				sb.append(colName).append("=").append(colValue).append(",");
@@ -256,11 +264,17 @@ public class ScriptExporter {
 			}
 			colValue = entry.getValue();
 			colType = colNameTypeMap.get(colName);
-			if("VARCHAR2".equals(colType)||"NVARCHAR2".equals(colType)||"CHAR".equals(colType)){
+			if("VARCHAR2".equals(colType)||"NVARCHAR2".equals(colType)){
 				if("NULL".equalsIgnoreCase(String.valueOf(colValue))){
 					continue;
 				}else{
 					vsb.append("'").append(colValue).append("',");
+				}
+			}else if("CHAR".equals(colType)){
+				if("NULL".equalsIgnoreCase(String.valueOf(colValue))){
+					continue;
+				}else{
+					vsb.append("'").append(String.valueOf(colValue).trim()).append("',");
 				}
 			}else if("FLOAT".equals(colType)||"NUMBER".equals(colType)){
 				vsb.append(colValue).append(",");
@@ -308,7 +322,7 @@ public class ScriptExporter {
 			querySrcSb.append(" FROM (SELECT T.*,ROWNUM RN FROM (SELECT * FROM ").append(tableName).append(" A");
 			querySrcSb.append(") T").append(" WHERE ROWNUM<=").append((round+1)*batchSize).append(") RESULT WHERE RN>").append(round*batchSize);
 		}else{
-			querySrcSb.append(" FROM (SELECT T.*,ROWNUM RN FROM (SELECT * FROM XFL_").append(tableName).append(" A ORDER BY A.ETLTS DESC");
+			querySrcSb.append(" FROM (SELECT T.*,ROWNUM RN FROM (SELECT * FROM XFL_").append(tableName).append(" A ORDER BY A.ETLTS ASC");
 			querySrcSb.append(") T").append(" WHERE ROWNUM<=").append((round+1)*batchSize).append(") RESULT WHERE RN>").append(round*batchSize);
 		}
 		Statement st = null;

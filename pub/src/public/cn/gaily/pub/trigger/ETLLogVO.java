@@ -19,6 +19,61 @@ public class ETLLogVO implements Serializable {
 	public static String ENDTIME="endtime";
 	public static String RESULT="result";
 	
+	
+	public ETLLogVO setSrcdbname(String value){
+		this.setSRCDBNAME(value);
+		return this;
+	}
+	public ETLLogVO setSrcusername(String value){
+		this.setSRCUSERNAME(value);
+		return this;
+	}
+	public ETLLogVO setSrcport(String value){
+		this.setSRCPORT(value);
+		return this;
+	}
+	public ETLLogVO setSrcip(String value){
+		this.setSRCIP(value);
+		return this;
+	}
+	public ETLLogVO setDestdbname(String value){
+		this.setDESTDBNAME(value);
+		return this;
+	}
+	public ETLLogVO setDestusername(String value){
+		this.setDESTUSERNAME(value);
+		return this;
+	}
+	public ETLLogVO setDestport(String value){
+		this.setDESTPORT(value);
+		return this;
+	}
+	public ETLLogVO setDestip(String value){
+		this.setDESTIP(value);
+		return this;
+	}
+	
+	public ETLLogVO setType(String value){
+		this.setTYPE(value);
+		return this;
+	}
+	public ETLLogVO setStarttime(String value){
+		this.setSTARTTIME(value);
+		return this;
+	}
+	public ETLLogVO setEndtime(String value){
+		this.setENDTIME(value);
+		return this;
+	}
+	public ETLLogVO setResult(String value){
+		this.setRESULT(value);
+		return this;
+	}
+	
+	public ETLLogVO getLog(){
+		return this;
+	}
+	
 	public String getSRCDBNAME() {
 		return SRCDBNAME;
 	}

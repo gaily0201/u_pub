@@ -2,6 +2,7 @@ package cn.gaily.simplejdbc;
 
 import java.io.Serializable;
 import java.sql.Connection;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -71,9 +72,44 @@ public class SimpleDSMgr implements Serializable{
 				return null;
 			}
 		}
-		return conns.remove(0);
+		Connection conn = conns.remove(0);
+		boolean isValid = false;
+		try {
+			isValid = ensureOpen(conn);
+			if(isValid){
+				return conn;
+			}else{
+				return getConnection();
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		return null;
 	}
 	
+	/**
+	 * <p>方法名称：ensureOpen</p>
+	 * <p>方法描述：确保拿到的连接可用</p>
+	 * @param conn
+	 * @return
+	 * @throws SQLException
+	 * @author xiaoh
+	 * @since  2014-12-1
+	 * <p> history 2014-12-1 xiaoh  创建   <p>
+	 */
+	private boolean ensureOpen(Connection conn) throws SQLException {
+		if(conn==null){
+			return false;
+		}
+		if(conn.isClosed()){
+			conn.close();
+			conn = null;
+			return false;
+		}
+		return true;
+	}
+
+
 	/**
 	 * <p>方法名称：init</p>
 	 * <p>方法描述：初始化连接</p>
@@ -96,8 +132,8 @@ public class SimpleDSMgr implements Serializable{
 	
 	public void realRelease(){
 		if(conns.size()>0){
-			for(Connection c:conns){
-				SimpleJdbc.release(c, null, null);
+			for(int i=0;i<conns.size();i++){
+				SimpleJdbc.release(conns.get(i), null, null);
 			}
 		}
 	}

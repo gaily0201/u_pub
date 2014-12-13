@@ -91,11 +91,11 @@ public class ETLDeleteTask extends AbstractETLTask{
 				srcConn.rollback();
 			} catch (SQLException e1) {
 				e1.printStackTrace();
-				throw new RuntimeException("更新数据库回滚数据出错"+e1);
+				throw new RuntimeException(tableName+"更新数据库回滚数据出错"+e1);
 				
 			}
 			e.printStackTrace();
-			throw new RuntimeException("删除数据出错"+e);
+			throw new RuntimeException(tableName+"删除数据出错"+e);
 		} finally{
 			SimpleJdbc.release(null, pst, null);
 			tarMgr.release(tarConn);
@@ -158,7 +158,7 @@ public class ETLDeleteTask extends AbstractETLTask{
 			
 			String colType =colNameTypeMap.get(pkName);
 			if(CommonUtils.isEmpty(colType)){
-				throw new RuntimeException("获取主键字段类型出错");
+				throw new RuntimeException(tableName+"获取主键字段类型出错");
 			}
 			pst = setValues(pst, pkName, colType, pkValue, null);
 			int i= pst.executeUpdate();
@@ -174,11 +174,11 @@ public class ETLDeleteTask extends AbstractETLTask{
 				srcConn.rollback();
 			} catch (SQLException e1) {
 				e1.printStackTrace();
-				throw new RuntimeException("更新数据库回滚数据出错"+e1);
+				throw new RuntimeException(tableName+"更新数据库回滚数据出错"+e1);
 				
 			}
 			e.printStackTrace();
-			throw new RuntimeException("删除数据出错"+e);
+			throw new RuntimeException(tableName+"删除数据出错"+e);
 		}finally{
 			SimpleJdbc.release(null, pst, null);
 			tarMgr.release(tarConn);

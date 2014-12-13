@@ -19,6 +19,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.ArrayBlockingQueue;
+
 import cn.gaily.pub.util.CommonUtils;
 import cn.gaily.simplejdbc.SimpleDSMgr;
 import cn.gaily.simplejdbc.SimpleJdbc;
@@ -68,14 +69,14 @@ public abstract class AbstractETLTask {
 	public int batchSize = DEFAULT_BATCHSIZE;
 	
 	/**
-	 * 临时表前缀
-	 */
-	public static String tablePrefix = "XFL_";
-	
-	/**
 	 * 触发器管理表
 	 */
-	protected String mgrTriggerTabName =tablePrefix+"TABSTATUS";
+	protected String mgrTriggerTabName = "XFL_TABSTATUS";
+	
+	/**
+	 * 临时表前缀
+	 */
+	protected String tablePrefix = "XFL_";
 	
 	/**
 	 * 表名字段名map，key:表名大写,value:字段名,字段类型map
@@ -132,7 +133,7 @@ public abstract class AbstractETLTask {
 	 */
 	public Map<String,String> execute(SimpleDSMgr srcMgr, SimpleDSMgr tarMgr, String tableName, boolean isSyn){
 		if(srcMgr==null||tarMgr==null||CommonUtils.isEmpty(tableName)){
-			throw new RuntimeException("执行前数据预置参数出错");
+			throw new RuntimeException(tableName+"执行前数据预置参数出错");
 		}
 		
 		setIsSyn(isSyn);
@@ -200,7 +201,7 @@ public abstract class AbstractETLTask {
 					delete += task.doBatch(srcMgr, tarMgr, tableName, pkName,  valueList, colNameTypeMap, canBatch);
 					break;
 				default:
-					throw new RuntimeException("出错");
+					throw new RuntimeException(tableName+"出错");
 				}
 				
 			}else{
@@ -236,7 +237,7 @@ public abstract class AbstractETLTask {
 						delete++;
 						break;
 					default:
-						throw new RuntimeException("出错");
+						throw new RuntimeException(tableName+"出错");
 					}
 					
 				}
@@ -474,10 +475,10 @@ public abstract class AbstractETLTask {
 			}
 		} catch (SQLException e) {
 			e.printStackTrace();
-			throw new RuntimeException("查询数据出错"+e);
+			throw new RuntimeException(tableName+"查询数据出错"+e);
 		} catch (InterruptedException e) {
 			e.printStackTrace();
-			throw new RuntimeException("设置列值出错"+e);
+			throw new RuntimeException(tableName+"设置列值出错"+e);
 		} finally{
 			SimpleJdbc.release(null, st, rs);
 			srcMgr.release(srcConn);
@@ -503,7 +504,7 @@ public abstract class AbstractETLTask {
 	public Map<String,String> getTabCols(SimpleDSMgr mgr, String tableName, boolean isSyn){
 		
 		if(mgr==null||CommonUtils.isEmpty(tableName)){
-			throw new RuntimeException("获取表列参数出错");
+			throw new RuntimeException(tableName+"获取表列参数出错");
 		}
 		Connection conn = mgr.getConnection();
 		tableName = tableName.toUpperCase().trim();
@@ -557,7 +558,7 @@ public abstract class AbstractETLTask {
 	 * <p>方法描述：停用启用触发器</p>
 	 * @param mgr 			数据源
 	 * @param tableName		表名
-	 * @param type 			1、启用; 0、停用
+	 * @param type 			1、启用; 0、停用; 2、启用监控; 3、停用监控
 	 * @param needRelese	是否需要释放
 	 * @author xiaoh
 	 * @since  2014-10-28
@@ -565,28 +566,52 @@ public abstract class AbstractETLTask {
 	 */
 	public SimpleDSMgr enableTrigger(SimpleDSMgr mgr, String tableName, int type){
 		
-		if(mgr==null||CommonUtils.isEmpty(tableName)||(type!=0&&type!=1)){
-			throw new RuntimeException("停启用触发器参数出错");
+		if(mgr==null||CommonUtils.isEmpty(tableName)||(type!=0&&type!=1&&type!=2&&type!=3)){
+			throw new RuntimeException(tableName+"停启用触发器参数出错");
 		}
 		Connection conn = mgr.getConnection();
 		
-		ensureMgrTable(mgr,tablePrefix+"TABSTATUS");
+		ensureMgrTable(mgr,"XFL_TABSTATUS");
 		
 		String sql = null;
-		String sql1 = null;
-		if(type==0){
-			sql = "ALTER TABLE "+tableName+" DISABLE ALL TRIGGERS";
-			sql1 = "UPDATE "+tablePrefix+"TABSTATUS SET STATUS=0 WHERE TABLENAME='"+tableName+"'";
-		}else if(type==1){
-			sql = "ALTER TABLE "+tableName+" ENABLE ALL TRIGGERS";
-			sql1 = "UPDATE "+tablePrefix+"TABSTATUS SET STATUS=1 WHERE TABLENAME='"+tableName+"'";
-		}
+		String tsql1 = "ALTER TRIGGER XFL_"+tableName+"_1 DISABLE";
+		String tsql2 = "ALTER TRIGGER XFL_"+tableName+"_2 DISABLE";
+		String tsql3 = "ALTER TRIGGER XFL_"+tableName+"_3 DISABLE";
+		
+		String tsql11 = "ALTER TRIGGER XFL_"+tableName+"_1 ENABLE";
+		String tsql22 = "ALTER TRIGGER XFL_"+tableName+"_2 ENABLE";
+		String tsql33 = "ALTER TRIGGER XFL_"+tableName+"_3 ENABLE";
+		
+		
 		Statement st = null;
 		try {
 			conn.setAutoCommit(false);
 			st = conn.createStatement();
-			st.execute(sql);
-			st.execute(sql1);
+			if(type==0){
+				sql = "UPDATE XFL_TABSTATUS SET STATUS=0 WHERE TABLENAME='"+tableName+"'";
+				st.executeUpdate(sql);
+				st.executeUpdate(tsql1);
+				st.executeUpdate(tsql2);
+				st.executeUpdate(tsql3);
+			}else if(type==1){
+				sql = "UPDATE XFL_TABSTATUS SET STATUS=1 WHERE TABLENAME='"+tableName+"'";
+				st.executeUpdate(sql);
+				st.executeUpdate(tsql11);
+				st.executeUpdate(tsql22);
+				st.executeUpdate(tsql33);
+			}else if(type==2){
+				sql = "UPDATE XFL_TABSTATUS SET STATUS=2 WHERE TABLENAME='"+tableName+"'";
+				st.executeUpdate(sql);
+				st.executeUpdate(tsql11);
+				st.executeUpdate(tsql22);
+				st.executeUpdate(tsql33);
+			}else if(type==3){
+				sql = "UPDATE XFL_TABSTATUS SET STATUS=3 WHERE TABLENAME='"+tableName+"'";
+				st.executeUpdate(sql);
+				st.executeUpdate(tsql1);
+				st.executeUpdate(tsql2);
+				st.executeUpdate(tsql3);
+			}
 			conn.commit();
 		} catch (SQLException e) {
 			e.printStackTrace();
@@ -625,7 +650,7 @@ public abstract class AbstractETLTask {
 	 */
 	protected Connection delTemp(String pkName, List<String> insertPks, String tableName, Connection conn, int type, boolean batch) {
 		if(CommonUtils.isEmpty(pkName)||CommonUtils.isEmpty(tableName)||conn==null||(type!=1&&type!=2&&type!=3)){
-			throw new RuntimeException("删除临时表数据传入参数不能为空");
+			throw new RuntimeException(tableName+"删除临时表数据传入参数不能为空");
 		}
 		
 		if(isSyn){   		//为同步，则不用执行该方法
@@ -683,7 +708,7 @@ public abstract class AbstractETLTask {
 			}
 		} catch (SQLException e) {
 			e.printStackTrace();
-			throw new RuntimeException("删除临时表数据异常！"+e);
+			throw new RuntimeException(tableName+"删除临时表数据异常！"+e);
 		} finally{
 			SimpleJdbc.release(null, st, null);
 		}
@@ -692,14 +717,14 @@ public abstract class AbstractETLTask {
 	
 	private boolean ensureMgrTable(SimpleDSMgr mgr , String tableName){
 		if(mgr==null){
-			throw new RuntimeException("请添加数据源");
+			throw new RuntimeException(tableName+"请添加数据源");
 		}
 		Connection conn = mgr.getConnection();
 		if(conn==null){
 			return false;
 		}
 		if(CommonUtils.isEmpty(tableName)){
-			throw new RuntimeException("请传入有效的表名");
+			throw new RuntimeException(tableName+"请传入有效的表名");
 		}
 		String sql = "SELECT COUNT(1) FROM USER_TABLES WHERE TABLE_NAME=?";
 		Statement st = null;
@@ -723,10 +748,6 @@ public abstract class AbstractETLTask {
 		return false;
 	}
 	
-	
-	public void setTablePrefix(String tablePrefix) {
-		this.tablePrefix = tablePrefix;
-	}
 	
 	public void setBatchSize(int batchSize) {
 		this.batchSize = batchSize;

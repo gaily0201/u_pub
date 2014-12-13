@@ -101,8 +101,7 @@ public class SimpleWordUtil {
 		Dispatch.call(wordContent, "InsertAfter", text);// 插入一个段落到最后
 		Dispatch paragraphs = Dispatch.get(wordContent, "Paragraphs")
 				.toDispatch(); // 所有段落
-		int paragraphCount = Dispatch.get(paragraphs, "Count")
-				.changeType(Variant.VariantInt).getInt();// 一共的段落数
+		int paragraphCount = Dispatch.get(paragraphs, "Count").changeType(Variant.VariantInt).getInt();// 一共的段落数
 		// 找到刚输入的段落，设置格式
 		Dispatch lastParagraph = Dispatch.call(paragraphs, "Item",
 				new Variant(paragraphCount)).toDispatch(); // 最后一段（也就是刚插入的）
@@ -141,16 +140,14 @@ public class SimpleWordUtil {
 				new Variant(row), new Variant(column), new Variant(1))
 				.toDispatch(); // 设置row,column,表格外框宽度
 		Dispatch cols = Dispatch.get(newTable, "Columns").toDispatch(); // 此表的所有列，
-		int colCount = Dispatch.get(cols, "Count")
-				.changeType(Variant.VariantInt).getInt();// 一共有多少列
+		int colCount = Dispatch.get(cols, "Count").changeType(Variant.VariantInt).getInt();// 一共有多少列
 															// 实际上这个数==column
 		System.out.println(colCount + "列");
 		for (int i = 1; i <= colCount; i++) { // 循环取出每一列
 			Dispatch col = Dispatch.call(cols, "Item", new Variant(i))
 					.toDispatch();
 			Dispatch cells = Dispatch.get(col, "Cells").toDispatch();// 当前列中单元格
-			int cellCount = Dispatch.get(cells, "Count")
-					.changeType(Variant.VariantInt).getInt();// 当前列中单元格数
+			int cellCount = Dispatch.get(cells, "Count").changeType(Variant.VariantInt).getInt();// 当前列中单元格数
 																// 实际上这个数等于row
 			for (int j = 1; j <= cellCount; j++) {// 每一列中的单元格数
 				// Dispatch cell = Dispatch.call(cells, "Item", new
