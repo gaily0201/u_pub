@@ -8,7 +8,11 @@ import nc.vo.pub.lang.UFDateTime;
 import nc.vo.pub.lang.UFDouble;
 import nc.vo.pubapp.pattern.model.meta.entity.vo.VOMetaFactory;
 
-public class PubRef extends SuperVO {
+public class BaseCode extends SuperVO {
+/**
+	 * 
+	 */
+	private static final long serialVersionUID = -3213100748909954529L;
 /**
 *备用字段1
 */
@@ -57,13 +61,17 @@ public static final String PK="pk";
 *时间戳
 */
 public static final String TS="ts";
+/**
+*筛选列
+*/
+public static final String WHEREPART="wherepart";
 /** 
 * 获取备用字段1
 *
 * @return 备用字段1
 */
 public String getAttr01 () {
-return (String) this.getAttributeValue( PubRef.ATTR01);
+return (String) this.getAttributeValue( BaseCode.ATTR01);
  } 
 
 /** 
@@ -72,7 +80,7 @@ return (String) this.getAttributeValue( PubRef.ATTR01);
 * @param attr01 备用字段1
 */
 public void setAttr01 ( String attr01) {
-this.setAttributeValue( PubRef.ATTR01,attr01);
+this.setAttributeValue( BaseCode.ATTR01,attr01);
  } 
 
 /** 
@@ -81,7 +89,7 @@ this.setAttributeValue( PubRef.ATTR01,attr01);
 * @return 备用字段2
 */
 public String getAttr02 () {
-return (String) this.getAttributeValue( PubRef.ATTR02);
+return (String) this.getAttributeValue( BaseCode.ATTR02);
  } 
 
 /** 
@@ -90,7 +98,7 @@ return (String) this.getAttributeValue( PubRef.ATTR02);
 * @param attr02 备用字段2
 */
 public void setAttr02 ( String attr02) {
-this.setAttributeValue( PubRef.ATTR02,attr02);
+this.setAttributeValue( BaseCode.ATTR02,attr02);
  } 
 
 /** 
@@ -99,7 +107,7 @@ this.setAttributeValue( PubRef.ATTR02,attr02);
 * @return 备用字段3
 */
 public String getAttr03 () {
-return (String) this.getAttributeValue( PubRef.ATTR03);
+return (String) this.getAttributeValue( BaseCode.ATTR03);
  } 
 
 /** 
@@ -108,7 +116,7 @@ return (String) this.getAttributeValue( PubRef.ATTR03);
 * @param attr03 备用字段3
 */
 public void setAttr03 ( String attr03) {
-this.setAttributeValue( PubRef.ATTR03,attr03);
+this.setAttributeValue( BaseCode.ATTR03,attr03);
  } 
 
 /** 
@@ -117,7 +125,7 @@ this.setAttributeValue( PubRef.ATTR03,attr03);
 * @return 备用字段4
 */
 public String getAttr04 () {
-return (String) this.getAttributeValue( PubRef.ATTR04);
+return (String) this.getAttributeValue( BaseCode.ATTR04);
  } 
 
 /** 
@@ -126,7 +134,7 @@ return (String) this.getAttributeValue( PubRef.ATTR04);
 * @param attr04 备用字段4
 */
 public void setAttr04 ( String attr04) {
-this.setAttributeValue( PubRef.ATTR04,attr04);
+this.setAttributeValue( BaseCode.ATTR04,attr04);
  } 
 
 /** 
@@ -135,7 +143,7 @@ this.setAttributeValue( PubRef.ATTR04,attr04);
 * @return 备用字段5
 */
 public String getAttr05 () {
-return (String) this.getAttributeValue( PubRef.ATTR05);
+return (String) this.getAttributeValue( BaseCode.ATTR05);
  } 
 
 /** 
@@ -144,7 +152,7 @@ return (String) this.getAttributeValue( PubRef.ATTR05);
 * @param attr05 备用字段5
 */
 public void setAttr05 ( String attr05) {
-this.setAttributeValue( PubRef.ATTR05,attr05);
+this.setAttributeValue( BaseCode.ATTR05,attr05);
  } 
 
 /** 
@@ -153,7 +161,7 @@ this.setAttributeValue( PubRef.ATTR05,attr05);
 * @return 主类别编码
 */
 public String getBasecode () {
-return (String) this.getAttributeValue( PubRef.BASECODE);
+return (String) this.getAttributeValue( BaseCode.BASECODE);
  } 
 
 /** 
@@ -162,7 +170,7 @@ return (String) this.getAttributeValue( PubRef.BASECODE);
 * @param basecode 主类别编码
 */
 public void setBasecode ( String basecode) {
-this.setAttributeValue( PubRef.BASECODE,basecode);
+this.setAttributeValue( BaseCode.BASECODE,basecode);
  } 
 
 /** 
@@ -171,7 +179,7 @@ this.setAttributeValue( PubRef.BASECODE,basecode);
 * @return 主类别名称
 */
 public String getBasename () {
-return (String) this.getAttributeValue( PubRef.BASENAME);
+return (String) this.getAttributeValue( BaseCode.BASENAME);
  } 
 
 /** 
@@ -180,7 +188,7 @@ return (String) this.getAttributeValue( PubRef.BASENAME);
 * @param basename 主类别名称
 */
 public void setBasename ( String basename) {
-this.setAttributeValue( PubRef.BASENAME,basename);
+this.setAttributeValue( BaseCode.BASENAME,basename);
  } 
 
 /** 
@@ -189,7 +197,7 @@ this.setAttributeValue( PubRef.BASENAME,basename);
 * @return 子类别编码
 */
 public String getChildcode () {
-return (String) this.getAttributeValue( PubRef.CHILDCODE);
+return (String) this.getAttributeValue( BaseCode.CHILDCODE);
  } 
 
 /** 
@@ -198,7 +206,7 @@ return (String) this.getAttributeValue( PubRef.CHILDCODE);
 * @param childcode 子类别编码
 */
 public void setChildcode ( String childcode) {
-this.setAttributeValue( PubRef.CHILDCODE,childcode);
+this.setAttributeValue( BaseCode.CHILDCODE,childcode);
  } 
 
 /** 
@@ -207,7 +215,7 @@ this.setAttributeValue( PubRef.CHILDCODE,childcode);
 * @return 子类别名称
 */
 public String getChildname () {
-return (String) this.getAttributeValue( PubRef.CHILDNAME);
+return (String) this.getAttributeValue( BaseCode.CHILDNAME);
  } 
 
 /** 
@@ -216,7 +224,7 @@ return (String) this.getAttributeValue( PubRef.CHILDNAME);
 * @param childname 子类别名称
 */
 public void setChildname ( String childname) {
-this.setAttributeValue( PubRef.CHILDNAME,childname);
+this.setAttributeValue( BaseCode.CHILDNAME,childname);
  } 
 
 /** 
@@ -225,7 +233,7 @@ this.setAttributeValue( PubRef.CHILDNAME,childname);
 * @return 排序字段
 */
 public String getOrderpart () {
-return (String) this.getAttributeValue( PubRef.ORDERPART);
+return (String) this.getAttributeValue( BaseCode.ORDERPART);
  } 
 
 /** 
@@ -234,7 +242,7 @@ return (String) this.getAttributeValue( PubRef.ORDERPART);
 * @param orderpart 排序字段
 */
 public void setOrderpart ( String orderpart) {
-this.setAttributeValue( PubRef.ORDERPART,orderpart);
+this.setAttributeValue( BaseCode.ORDERPART,orderpart);
  } 
 
 /** 
@@ -243,7 +251,7 @@ this.setAttributeValue( PubRef.ORDERPART,orderpart);
 * @return 主键
 */
 public String getPk () {
-return (String) this.getAttributeValue( PubRef.PK);
+return (String) this.getAttributeValue( BaseCode.PK);
  } 
 
 /** 
@@ -252,7 +260,7 @@ return (String) this.getAttributeValue( PubRef.PK);
 * @param pk 主键
 */
 public void setPk ( String pk) {
-this.setAttributeValue( PubRef.PK,pk);
+this.setAttributeValue( BaseCode.PK,pk);
  } 
 
 /** 
@@ -261,7 +269,7 @@ this.setAttributeValue( PubRef.PK,pk);
 * @return 时间戳
 */
 public UFDateTime getTs () {
-return (UFDateTime) this.getAttributeValue( PubRef.TS);
+return (UFDateTime) this.getAttributeValue( BaseCode.TS);
  } 
 
 /** 
@@ -270,12 +278,30 @@ return (UFDateTime) this.getAttributeValue( PubRef.TS);
 * @param ts 时间戳
 */
 public void setTs ( UFDateTime ts) {
-this.setAttributeValue( PubRef.TS,ts);
+this.setAttributeValue( BaseCode.TS,ts);
+ } 
+
+/** 
+* 获取筛选列
+*
+* @return 筛选列
+*/
+public String getWherepart () {
+return (String) this.getAttributeValue( BaseCode.WHEREPART);
+ } 
+
+/** 
+* 设置筛选列
+*
+* @param wherepart 筛选列
+*/
+public void setWherepart ( String wherepart) {
+this.setAttributeValue( BaseCode.WHEREPART,wherepart);
  } 
 
 
   @Override
   public IVOMeta getMetaData() {
-    return VOMetaFactory.getInstance().getVOMeta("pub.pubref");
+    return VOMetaFactory.getInstance().getVOMeta("mgr.pubref");
   }
 }

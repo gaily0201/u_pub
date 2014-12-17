@@ -1,0 +1,811 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE beans PUBLIC "-//SPRING//DTD BEAN//EN" "http://www.springframework.org/dtd/spring-beans.dtd">
+
+<beans>
+
+	<!-- 环境变量 -->
+	<bean id="context" class="nc.vo.uif2.LoginContext">
+	</bean>
+
+	<!-- 模板容器 -->
+	<bean id="templateContainer" class="nc.ui.uif2.editor.TemplateContainer"
+		init-method="load">
+		<property name="context">
+			<ref bean="context" />
+		</property>
+		<property name="nodeKeies">
+			<list>
+				<value>usereditor</value>
+				<value>usergroupeditor</value>
+				<value>usergrouplist</value>
+				<value>shareorglist</value>
+				<value>userpassword</value>
+			</list>
+		</property>
+	</bean>
+
+	<bean id="queryTemplateContainer" class="nc.ui.uif2.editor.QueryTemplateContainer">
+		<property name="context">
+			<ref bean="context" />
+		</property>
+		<property name="nodeKey">
+			<value>userquery</value>
+		</property>
+	</bean>
+
+	<bean id="remoteCallCombinatorCaller" class="nc.ui.uif2.editor.UIF2RemoteCallCombinatorCaller">
+		<property name="remoteCallers">
+			<list>
+				<ref bean="templateContainer" />
+				<ref bean="queryTemplateContainer" />
+			</list>
+		</property>
+	</bean>
+
+	<!-- 应用服务 -->
+	<bean id="userSerivce" class="nc.ui.uap.rbac.usermanage.model.UserAppModelService" />
+	<bean id="userRelateService" class="nc.ui.uap.rbac.usermanage.model.UserRelateBatchService" />
+	<bean id="boadapterfacotry" class="nc.vo.bd.meta.GeneralBDObjectAdapterFactory">
+		<property name="mode" value="MD"></property>
+	</bean>
+
+	<bean id="userAppModel" class="nc.ui.uap.rbac.usermanage.model.UserManageModel">
+		<property name="context" ref="context"></property>
+		<property name="service" ref="userSerivce"></property>
+		<property name="businessObjectAdapterFactory" ref="boadapterfacotry"></property>
+	</bean>
+	<bean id="userRelateGroupModel"
+		class="nc.ui.uap.rbac.usermanage.model.UserRelateGroupBillModel">
+		<property name="businessObjectAdapterFactory" ref="boadapterfacotry"></property>
+		<property name="context" ref="context"></property>
+		<property name="service" ref="userRelateService"></property>
+		<property name="userModel" ref="userAppModel"></property>
+	</bean>
+	<bean id="userShareOrgModel" class="nc.ui.uap.rbac.usermanage.model.UserShareOrgBillModel">
+		<property name="businessObjectAdapterFactory" ref="boadapterfacotry"></property>
+		<property name="context" ref="context"></property>
+		<property name="service" ref="userRelateService"></property>
+		<property name="userModel" ref="userAppModel"></property>
+	</bean>
+
+	<!-- 用户InitDataListener -->
+	<bean name="InitDataListener" class="nc.ui.uap.rbac.usermanage.model.UserInitDataListener">
+		<property name="dataManager" ref="modelDataManager"></property>
+	</bean>
+
+	<!-- 模型管理器 -->
+	<bean id="modelDataManager" class="nc.ui.uap.rbac.usermanage.model.UserModelDataManager">
+		<property name="userModel" ref="userAppModel"></property>
+		<property name="paginationModel" ref="paginationModel"></property>
+		<property name="paginationDelegator" ref="paginationDelegator"></property>
+	</bean>
+
+	<bean id="paginationModel" class="nc.ui.uif2.components.pagination.PaginationModel"
+		init-method="init">
+	</bean>
+	<bean id="paginationDelegator"
+		class="nc.ui.uif2.components.pagination.BillManagePaginationDelegator">
+		<constructor-arg>
+			<ref bean="userAppModel" />
+		</constructor-arg>
+		<constructor-arg>
+			<ref bean="paginationModel" />
+		</constructor-arg>
+	</bean>
+
+
+	<!-- 视图部分 -->
+	<bean id="container" class="nc.ui.uif2.TangramContainer"
+		init-method="initUI">
+		<property name="tangramLayoutRoot">
+			<bean class="nc.ui.uif2.tangramlayout.node.TBNode">
+				<property name="tabs">
+					<list>
+						<bean class="nc.ui.uif2.tangramlayout.node.HSNode">
+							<property name="name">
+								<bean class="nc.ui.uif2.I18nFB">
+									<property name="resDir" value="10120ROLM"></property>
+									<property name="resId" value="UC001-0000107"></property>
+									<property name="defaultValue" value="列表"></property>
+								</bean>
+							</property>
+							<property name="left">
+								<bean class="nc.ui.uif2.tangramlayout.node.CNode">
+									<property name="name">
+										<bean class="nc.ui.uif2.I18nFB">
+											<property name="resDir" value="10120USRM"></property>
+											<property name="resId" value="010120USRM0043"></property>
+											<property name="defaultValue" value="查询区域"></property>
+										</bean>
+									</property>
+									<property name="component">
+										<ref bean="userQryPnl" />
+									</property>
+								</bean>
+							</property>
+							<property name="right">
+								<bean class="nc.ui.uif2.tangramlayout.node.CNode">
+									<property name="component" ref="userListView"></property>
+								</bean>
+							</property>
+							<property name="dividerLocation" value="0.2f" />
+						</bean>
+						<bean class="nc.ui.uif2.tangramlayout.node.VSNode">
+							<property name="name">
+								<bean class="nc.ui.uif2.I18nFB">
+									<property name="resDir" value="10120ROLM"></property>
+									<property name="resId" value="UC001-0000106"></property>
+									<property name="defaultValue" value="卡片"></property>
+								</bean>
+							</property>
+							<property name="up">
+								<bean class="nc.ui.uif2.tangramlayout.node.CNode">
+									<property name="component" ref="userEditor"></property>
+								</bean>
+							</property>
+							<property name="down">
+								<bean class="nc.ui.uif2.tangramlayout.node.TBNode">
+									<property name="tabs">
+										<list>
+											<bean class="nc.ui.uif2.tangramlayout.node.CNode">
+												<property name="component" ref="userRelateGroupTable"></property>
+												<property name="name">
+													<bean class="nc.ui.uif2.I18nFB">
+														<property name="resDir" value="10120USRM"></property>
+														<property name="resId" value="010120USRM0005"></property>
+														<property name="defaultValue" value="集团内共享"></property>
+													</bean>
+												</property>
+											</bean>
+											<bean class="nc.ui.uif2.tangramlayout.node.CNode">
+												<property name="component" ref="userShareOrgTable">
+												</property>
+												<property name="name">
+													<bean class="nc.ui.uif2.I18nFB">
+														<property name="resDir" value="10120USRM"></property>
+														<property name="resId" value="010120USRM0018"></property>
+														<property name="defaultValue" value="集团间共享"></property>
+													</bean>
+												</property>
+											</bean>
+										</list>
+									</property>
+								</bean>
+							</property>
+							<property name="dividerLocation" value="300.0f" />	
+						</bean>
+					</list>
+				</property>
+				<property name="showMode" value="CardLayout"></property>
+			</bean>
+		</property>
+		<property name="model" ref="userAppModel" />
+	</bean>
+
+	<!-- 页签按钮管理 -->
+	<bean id="toftpanelActionContributors" class="nc.ui.uif2.actions.ActionContributors">
+		<property name="contributors">
+			<list>
+				<ref bean="userListViewActions" />
+				<ref bean="userEditorActions" />
+			</list>
+		</property>
+	</bean>
+
+	<!-- 页签按钮 -->
+	<bean id="userListViewActions" class="nc.ui.uif2.actions.StandAloneToftPanelActionContainer">
+		<constructor-arg>
+			<ref bean="userListView" />
+		</constructor-arg>
+		<property name="actions">
+			<list>
+				<ref bean="userAddAction" />
+				<ref bean="userEditAction" />
+				<ref bean="userDeleteAction" />
+				<ref bean="userCopyAction" />
+
+				<ref bean="seperateaction" />
+
+				<ref bean="userqueryAction" />
+				<ref bean="userrefreshaction" />
+				<ref bean="filterMenuAction" />
+
+				<ref bean="seperateaction" />
+
+				<!-- modify by jl @2009年2月18日 暂时不需要这些Action -->
+				<ref bean="assistMenuAction" />
+				<ref bean="seperateaction" />
+
+				<ref bean="powerAssignAction" />
+				<ref bean="seperateaction" />
+				
+				<ref bean="sealMenuAction" />
+				<ref bean="seperateaction" />
+				
+				<ref bean="lockMenuAction" />
+				<ref bean="seperateaction" />
+
+				<ref bean="resetPasswodAction" />
+				<ref bean="modifyAction" />
+				<ref bean="seperateaction" />
+
+				<ref bean="listPrintActionGroup" />
+				
+				<ref bean="seperateaction" />
+				<ref bean="userSignAction"/>
+			</list>
+		</property>
+		<property name="model" ref="userAppModel"></property>
+	</bean>
+
+	<bean id="userEditorActions" class="nc.ui.uif2.actions.StandAloneToftPanelActionContainer">
+		<constructor-arg>
+			<ref bean="userEditor" />
+		</constructor-arg>
+		<property name="actions">
+			<list>
+				<ref bean="userAddAction" />
+				<ref bean="userEditAction" />
+				<ref bean="userDeleteAction" />
+				<ref bean="userCopyAction" />
+
+				<ref bean="seperateaction" />
+
+				<ref bean="userqueryAction" />
+				<ref bean="userrefreshaction" />
+				<ref bean="filterMenuAction" />
+
+				<ref bean="seperateaction" />
+
+				<!-- modify by jl @2009年2月18日 暂时不需要这些Action -->
+				<ref bean="assistMenuAction" />
+				<ref bean="seperateaction" />
+				
+				<ref bean="powerAssignAction" />
+				<ref bean="seperateaction" />
+				
+				<ref bean="sealMenuAction" />
+
+				<ref bean="seperateaction" />
+				<ref bean="lockMenuAction" />
+
+				<ref bean="seperateaction" />
+
+				<ref bean="resetPasswodAction" />
+
+				<ref bean="seperateaction" />
+
+				<ref bean="printActionGroup" />
+				
+				<ref bean="seperateaction" />
+				
+				<ref bean="userSignAction"/>
+					
+			</list>
+		</property>
+		<property name="editActions">
+			<list>
+				<ref bean="userSaveAction" />
+				<ref bean="saveaddaction" />
+				<ref bean="seperateaction" />
+				<ref bean="userCancelAction" />
+			</list>
+		</property>
+		<property name="model" ref="userAppModel"></property>
+	</bean>
+
+	<bean id="paginationBar" class="nc.ui.uif2.components.pagination.PaginationBar">
+		<property name="paginationModel" ref="paginationModel"></property>
+		<property name="context" ref="context"></property>
+	</bean>
+	<bean id="userQryPnl" class="nc.ui.uif2.actions.QueryAreaShell"
+		init-method="initUI">
+		<property name="queryArea">
+			<bean factory-bean="userqueryAction" factory-method="createQueryArea"></bean>
+		</property>
+	</bean>
+
+	<bean id="userListView" class="nc.ui.uap.rbac.usermanage.view.UserListView"
+		init-method="initUI">
+		<property name="multiSelectionMode" value="1"/>
+		<property name="model" ref="userAppModel"></property>
+		<property name="multiSelectionEnable"><!-- 此处禁止了多选，此后所有的Action都是基于单选进行的 -->
+			<value>true</value>
+		</property>
+		<property name="nodekey">
+			<value>usereditor</value>
+		</property>
+		<property name="pos">
+			<value>head</value>
+		</property>
+		<property name="templateContainer" ref="templateContainer"></property>
+		<property name="south" ref="paginationBar"></property>
+
+		<property name="north" ref="userListToolBarPanel"></property>
+	</bean>
+
+	<bean id="userEditor" class="nc.ui.uap.rbac.usermanage.view.UserEditorForm"
+		init-method="initUI">
+		<property name="model" ref="userAppModel"></property>
+		<property name="nodekey">
+			<value>usereditor</value>
+		</property>
+		<property name="templateContainer" ref="templateContainer"></property>
+		<property name="componentValueManager">
+			<bean class="nc.ui.uif2.editor.value.BillCardPanelMetaDataValueAdapter"></bean>
+		</property>
+		<property name="north" ref="userEditToolBarPanel"></property>
+	</bean>
+
+	<bean id="userListToolBarPanel" class="nc.ui.uif2.tangramlayout.CardLayoutToolbarPanel">
+		<property name="model" ref="userAppModel"></property>
+	</bean>
+	<bean id="userEditToolBarPanel" class="nc.ui.uif2.tangramlayout.CardLayoutToolbarPanel">
+		<property name="actions">
+			<list>
+				<ref bean="firstlineAction" />
+				<ref bean="prelineAction" />
+				<ref bean="nextlineAction" />
+				<ref bean="lastLineAction" />
+			</list>
+		</property>
+		<property name="model" ref="userAppModel"></property>
+		<property name="titleAction" ref="returnAction"></property>
+	</bean>
+
+	<bean id="userRelateGroupTable" class="nc.ui.uap.rbac.usermanage.view.UserRelateBillTable"
+		init-method="initUI">
+		<property name="model" ref="userRelateGroupModel"></property>
+		<property name="nodekey">
+			<value>usergrouplist</value>
+		</property>
+		<property name="templateContainer" ref="templateContainer"></property>
+		<property name="componentValueManager">
+			<bean class="nc.ui.uif2.editor.value.BillCardPanelMetaDataValueAdapter"></bean>
+		</property>
+		<property name="actions">
+			<list>
+				<ref bean="distriuseraction" />
+			</list>
+		</property>
+	</bean>
+
+	<bean id="userShareOrgTable" class="nc.ui.uap.rbac.usermanage.view.UserRelateBillTable"
+		init-method="initUI">
+		<property name="model" ref="userShareOrgModel"></property>
+		<property name="nodekey">
+			<value>shareorglist</value>
+		</property>
+		<property name="templateContainer" ref="templateContainer"></property>
+		<property name="componentValueManager">
+			<bean class="nc.ui.uif2.editor.value.BillCardPanelMetaDataValueAdapter"></bean>
+		</property>
+		<property name="actions">
+			<list>
+				<ref bean="usershareaction" />
+			</list>
+		</property>
+	</bean>
+	<!-- Actions.......... -->
+	<!--用户分组-->
+	<bean id="userqueryAction" class="nc.ui.uap.rbac.usermanage.actions.UserQueryAction">
+		<property name="model" ref="userAppModel"></property>
+		<property name="dataManager" ref="modelDataManager"></property>
+		<property name="templateContainer" ref="queryTemplateContainer" />
+		<property name="queryDelegator">
+			<bean class="nc.ui.uap.rbac.usermanage.actions.RbacQueryDelegator">
+				<property name="context" ref="context"></property>
+				<property name="nodeKey" value="userquery"></property>
+			</bean>
+		</property>
+	</bean>
+
+	<bean id="distriuseraction" class="nc.ui.uap.rbac.usermanage.actions.DistriUserAction">
+		<property name="appModel" ref="userRelateGroupModel"></property>
+		<property name="code" value="GroupingUser"></property>
+		<property name="showNameInToolbar" value="true"></property>
+
+		<property name="exceptionHandler" ref="handler"></property>
+	</bean>
+
+
+	<bean id="usershareaction" class="nc.ui.uap.rbac.usermanage.actions.UserShareAction">
+		<property name="appModel" ref="userShareOrgModel"></property>
+		<property name="code" value="ShareUser"></property>
+		<property name="showNameInToolbar" value="true"></property>
+		<property name="exceptionHandler" ref="handler"></property>
+		<property name="validators">
+			<list>
+				<ref bean="userSharedModifiedValidator" />
+			</list>
+		</property>
+	</bean>
+	
+	<bean id="userAddAction" class="nc.ui.uap.rbac.usermanage.actions.UserAddAction">
+		<property name="model" ref="userAppModel"></property>
+		<!--
+			<property name="interceptor" ref="actioninterceptor"></property>
+		-->
+	</bean>
+	<bean id="userEditAction" class="nc.ui.uap.rbac.usermanage.actions.UserEditAction">
+		<property name="model" ref="userAppModel"></property>
+		<property name="exceptionHandler" ref="handler"></property>
+		<property name="interceptor" ref="distributeDataInterceptor"></property>
+		<property name="validators">
+			<list>
+				<ref bean="userSharedModifiedValidator" />
+				<ref bean="userManagePermissionValidator" />
+			</list>
+		</property>
+	</bean>
+	<bean id="userDeleteAction" class="nc.ui.uap.rbac.usermanage.actions.UserDelAction">
+		<property name="model" ref="userAppModel"></property>
+		<property name="interceptor" ref="distributeDataInterceptor"></property>
+		<property name="validators">
+			<list>
+				<ref bean="userSharedModifiedValidator" />
+				<ref bean="userManagePermissionValidator" />
+			</list>
+		</property>
+		<property name="exceptionHandler" ref="handler"></property>
+	</bean>
+	
+	<bean id="userCopyAction" class="nc.ui.uap.rbac.usermanage.actions.UserCopyAction">
+		<property name="model" ref="userAppModel"></property>
+		<property name="editor" ref="userEditor"></property>
+	</bean>
+	
+	<bean id="userCancelAction" class="nc.ui.uif2.actions.CancelAction">
+		<property name="model" ref="userAppModel"></property>
+	</bean>
+	<bean id="userSaveAction" class="nc.ui.uap.rbac.usermanage.actions.UserSaveAction">
+		<property name="model" ref="userAppModel"></property>
+		<property name="editor" ref="userEditor"></property>
+		<property name="validationService" ref="userValidationService"></property>
+		<property name="exceptionHandler" ref="handler"></property>
+	</bean>
+	<bean id="userValidationService" class="nc.ui.uap.rbac.usermanage.model.UserValidationService">
+		<constructor-arg>
+			<ref bean="userEditor" />
+		</constructor-arg>
+	</bean>
+	<!--
+		<bean id="userpasswordaction"
+		class="nc.ui.uap.rbac.usermanage.actions.UserPasswordConfigAction">
+		<property name="model" ref="userAppModel"></property> <property
+		name="templateContainer" ref="templateContainer"></property> <property
+		name="btnName"> <bean class="nc.ui.uif2.I18nFB"> <property
+		name="resDir" value="10120USRM"></property> <property name="resId"
+		value="010120USRM0044"></property> <property name="defaultValue"
+		value="密码设置"></property> </bean> </property> <property
+		name="interceptor" ref="actioninterceptor"></property> <property
+		name="exceptionHandler" ref="handler"></property> </bean>
+	-->
+
+	<bean id="userrefreshaction" class="nc.ui.uap.rbac.usermanage.actions.UserListCardRefreshAction">
+		<property name="dataManager" ref="modelDataManager"></property>
+		<property name="model" ref="userAppModel"></property>
+		<property name="cardEditor" ref="userEditor"></property>
+	</bean>
+
+	<bean id="lockMenuAction" class="nc.funcnode.ui.action.GroupAction">
+		<property name="code" value="lockmenu"></property>
+		<property name="actions">
+			<list>
+				<ref bean="lockaction" />
+				<ref bean="unlockaction" />
+			</list>
+		</property>
+	</bean>
+
+	<bean id="lockaction" class="nc.ui.uap.rbac.usermanage.actions.UserLockAction">
+		<property name="model" ref="userAppModel"></property>
+		<property name="exceptionHandler" ref="handler"></property>
+		<property name="code" value="Lock"></property>
+		<property name="dataManager" ref="modelDataManager"></property>
+		<property name="validators">
+			<list>
+				<ref bean="userSharedModifiedValidator" />
+				<ref bean="userManagePermissionValidator" />
+			</list>
+		</property>
+	</bean>
+	<bean id="unlockaction" class="nc.ui.uap.rbac.usermanage.actions.UserUnlockAction">
+		<property name="model" ref="userAppModel"></property>
+		<property name="exceptionHandler" ref="handler"></property>
+		<property name="code" value="UnLock"></property>
+		<property name="dataManager" ref="modelDataManager"></property>
+		<property name="validators">
+			<list>
+				<ref bean="userSharedModifiedValidator" />
+				<ref bean="userManagePermissionValidator" />
+			</list>
+		</property>
+	</bean>
+	<!-- 保存新增 -->
+	<bean id="saveaddaction" class="nc.ui.uif2.actions.SaveAddAction">
+		<property name="model" ref="userAppModel"></property>
+		<property name="addAction" ref="userAddAction"></property>
+		<property name="editor" ref="userEditor"></property>
+		<property name="validationService" ref="userValidationService"></property>
+		<property name="exceptionHandler" ref="handler"></property>
+	</bean>
+
+	<bean id="printActionGroup" class="nc.funcnode.ui.action.GroupAction">
+		<property name="actions">
+			<list>
+				<ref bean="templetprintaction" />
+				<ref bean="templetprintpreviewaction" />
+				<ref bean="editorOutputAction" />
+			</list>
+		</property>
+		<property name="code" value="printmenu"></property>
+		<property name="name">
+			<bean class="nc.ui.uif2.I18nFB">
+				<property name="resDir" value="10120ROLM"></property>
+				<property name="resId" value="UC001-0000007"></property>
+				<property name="defaultValue" value="打印"></property>
+			</bean>
+		</property>
+	</bean>
+	<bean id="templetprintaction" class="nc.ui.uif2.actions.TemplatePrintAction">
+		<property name="model" ref="userAppModel"></property>
+		<property name="nodeKey" value="userCardPrint" />
+		<property name="printDlgParentConatiner" ref="userEditor" />
+		<property name="datasource" ref="datasource"></property>
+	</bean>
+
+	<bean id="editorOutputAction" class="nc.ui.uif2.actions.OutputAction">
+		<property name="model" ref="userAppModel"></property>
+		<property name="nodeKey" value="userCardPrint" />
+		<property name="printDlgParentConatiner" ref="userEditor" />
+		<property name="datasource" ref="datasource"></property>
+	</bean>
+	
+	<bean id="userSignAction" class="nc.ui.uap.rbac.usermanage.actions.UserSignAction">
+		<property name="userModel" ref="userAppModel"/>
+	</bean>
+
+	<bean id="datasource"
+		class="nc.ui.uap.rbac.usermanage.model.UserCardEditorPrintDataSource">
+		<property name="model" ref="userAppModel" />
+		<property name="userEditor" ref="userEditor"></property>
+	</bean>
+
+	<bean id="templetprintpreviewaction" class="nc.ui.uif2.actions.TemplatePreviewAction">
+		<property name="model" ref="userAppModel"></property>
+		<property name="nodeKey" value="userCardPrint" />
+		<property name="printDlgParentConatiner" ref="userEditor" />
+		<property name="datasource" ref="datasource"></property>
+	</bean>
+
+	<bean id="listPrintActionGroup" class="nc.funcnode.ui.action.GroupAction">
+		<property name="code" value="listPrintGroup" />
+		<property name="actions">
+			<list>
+				<ref bean="listTempletprintAction" />
+				<ref bean="listTempletPreviewAction" />
+				<ref bean="listOutputAction" />
+			</list>
+		</property>
+	</bean>
+
+	<bean id="listTempletPreviewAction"
+		class="nc.ui.uap.rbac.print.RbacTemplatePaginationPreviewAction">
+		<property name="printAction" ref="listTempletprintAction" />
+	</bean>
+
+	<bean id="listTempletprintAction"
+		class="nc.ui.uap.rbac.print.RbacTemplatePaginationPrintAction">
+		<property name="model" ref="userAppModel" />
+		<property name="nodeKey" value="userListPrint" />
+		<property name="paginationModel" ref="paginationModel" />
+		<property name="printFactory" ref="printFactory" />
+		<property name="printDlgParentConatiner" ref="userListView" />
+	</bean>
+
+	<bean id="listOutputAction" class="nc.ui.uap.rbac.print.RbacPaginationOutputAction">
+		<property name="model" ref="userAppModel" />
+		<property name="nodeKey" value="userListPrint" />
+		<property name="paginationModel" ref="paginationModel" />
+		<property name="printFactory" ref="printFactory" />
+		<property name="printDlgParentConatiner" ref="userListView" />
+	</bean>
+
+	<bean id="printFactory"
+		class="nc.ui.uap.rbac.print.service.RbacDefaultTemplatePagePrintFactory">
+		<property name="mdId" value="f6f9a473-56c0-432f-8bc7-fbf8fde54fee"/>
+		<property name="beforeCacheConvertor" >
+			<bean class="nc.ui.uap.rbac.usermanage.model.UserBeforeCacheConvertor">
+				<constructor-arg value="f6f9a473-56c0-432f-8bc7-fbf8fde54fee"/>
+			</bean>
+		</property>
+	</bean>
+
+	<bean id="userMigrateAction" class="nc.ui.uap.rbac.usermanage.actions.UserMigrateAction">
+		<property name="btnName">
+			<bean class="nc.ui.uif2.I18nFB">
+				<property name="resDir" value="10120USRM"></property>
+				<property name="resId" value="010120USRM0032"></property>
+				<property name="defaultValue" value="用户调动"></property>
+			</bean>
+		</property>
+		<property name="code" value="MigrateUser"></property>
+		<property name="model" ref="userAppModel"></property>
+		<property name="showNameInToolbar" value="true"></property>
+
+		<property name="validators">
+			<list>
+				<ref bean="userSharedModifiedValidator" />
+				<ref bean="userManagePermissionValidator" />
+			</list>
+		</property>
+		<property name="exceptionHandler" ref="handler"></property>
+	</bean>
+
+	<bean id="sealMenuAction" class="nc.funcnode.ui.action.GroupAction">
+		<property name="actions">
+			<list>
+				<ref bean="unsealAction" />
+				<ref bean="sealAction" />
+			</list>
+		</property>
+		<property name="code" value="sealmenu"></property>
+	</bean>
+
+	<bean id="sealAction" class="nc.ui.uap.rbac.usermanage.actions.UserDisableAction">
+		<property name="model" ref="userAppModel"></property>
+		<property name="editor" ref="userEditor"></property>
+		<property name="exceptionHandler" ref="handler"></property>
+
+		<property name="validators">
+			<list>
+				<ref bean="userSharedModifiedValidator" />
+				<ref bean="userManagePermissionValidator" />
+			</list>
+		</property>
+	</bean>
+	<bean id="unsealAction" class="nc.ui.uap.rbac.usermanage.actions.UserEnableAction">
+		<property name="model" ref="userAppModel"></property>
+		<property name="editor" ref="userEditor"></property>
+		<property name="exceptionHandler" ref="handler"></property>
+		<property name="validators">
+			<list>
+				<ref bean="userSharedModifiedValidator" />
+				<ref bean="userManagePermissionValidator" />
+			</list>
+		</property>
+	</bean>
+	<bean id="resetPasswodAction" class="nc.ui.uap.rbac.usermanage.actions.ResetPasswordAction">
+		<property name="model" ref="userAppModel"></property>
+		<property name="validators">
+			<list>
+				<ref bean="userSharedModifiedValidator" />
+				<ref bean="userManagePermissionValidator" />
+			</list>
+		</property>
+		<property name="exceptionHandler" ref="handler"></property>
+	</bean>
+	<bean id="filterMenuAction" class="nc.funcnode.ui.action.MenuAction">
+		<property name="actions">
+			<list>
+				<ref bean="filterAction" />
+			</list>
+		</property>
+		<property name="code" value="filter"></property>
+		<property name="name">
+			<bean class="nc.ui.uif2.I18nFB">
+				<property name="resDir" value="10120USRM"></property>
+				<property name="resId" value="010120USRM0045"></property>
+				<property name="defaultValue" value="过滤"></property>
+			</bean>
+		</property>
+	</bean>
+	
+	<bean id="assistMenuAction" class="nc.funcnode.ui.action.MenuAction">
+		<property name="actions">
+			<list>
+				<ref bean="distriuseraction" />
+				<ref bean="usershareaction" />
+				<ref bean="userMigrateAction" />
+			</list>
+		</property>
+		<property name="code" value="assist"></property>
+		<property name="name">
+			<bean class="nc.ui.uif2.I18nFB">
+				<property name="resDir" value="common"></property>
+				<property name="resId" value="UC001-0000137"></property>
+				<property name="defaultValue" value="辅助功能"></property>
+			</bean>
+		</property>
+	</bean>
+	
+	<bean id="filterAction" class="nc.ui.uap.rbac.usermanage.actions.UserFilterAction">
+		<property name="dataManager" ref="modelDataManager"></property>
+		<property name="exceptionHandler" ref="handler"></property>
+	</bean>
+
+	<bean id="powerAssignAction" class="nc.ui.uap.rbac.usermanage.actions.PowerAssignAction">
+		<property name="btnName">
+			<bean class="nc.ui.uif2.I18nFB">
+				<property name="resDir" value="10120USRM"></property>
+				<property name="resId" value="010120USRM0046"></property>
+				<property name="defaultValue" value="分配权限"></property>
+			</bean>
+		</property>
+		<property name="model" ref="userAppModel"></property>
+		<property name="openingFunCode" value="10120USRPERM"></property>
+	</bean>
+
+	<bean id="userManagePermissionValidator" class="nc.validator.rbac.UserManagePermissionValidator"/>
+	<bean id="userSharedModifiedValidator" class="nc.validator.rbac.UserSharedModifiedValidator"/>
+	
+	<!-- 辅助Bean -->
+	<bean id="handler" class="nc.ui.uif2.DefaultExceptionHanler">
+		<property name="context" ref="context"></property>
+	</bean>
+	<bean id="distributeDataInterceptor" class="nc.validator.rbac.RBACDistributeDataInterceptor">
+		<property name="appModel" ref="userAppModel"></property>
+	</bean>
+	<!-- 分隔条 -->
+	<bean id="seperateaction" class="nc.funcnode.ui.action.SeparatorAction">
+	</bean>
+
+	<bean id="firstlineAction" class="nc.ui.uif2.actions.FirstLineAction">
+		<property name="model" ref="userAppModel"></property>
+		<property name="exceptionHandler" ref="handler"></property>
+	</bean>
+
+	<bean id="prelineAction" class="nc.ui.uif2.actions.PreLineAction">
+		<property name="model" ref="userAppModel"></property>
+		<property name="exceptionHandler" ref="handler"></property>
+	</bean>
+
+	<bean id="nextlineAction" class="nc.ui.uif2.actions.NextLineAction">
+		<property name="model" ref="userAppModel"></property>
+		<property name="exceptionHandler" ref="handler"></property>
+	</bean>
+
+	<bean id="lastLineAction" class="nc.ui.uif2.actions.LastLineAction">
+		<property name="model" ref="userAppModel"></property>
+		<property name="exceptionHandler" ref="handler"></property>
+	</bean>
+	<bean id="returnAction" class="nc.ui.uif2.actions.ShowMeUpAction">
+		<property name="goComponent" ref="userListView"></property>
+		<property name="exceptionHandler" ref="handler"></property>
+	</bean>
+
+	<bean id="userGroupAppModel" class="nc.ui.uif2.model.BillManageModel">
+		<property name="context" ref="context"></property>
+	</bean>
+	<bean id="leftsize" class="java.awt.Dimension">
+		<constructor-arg>
+			<value>300</value>
+		</constructor-arg>
+		<constructor-arg>
+			<value>600</value>
+		</constructor-arg>
+	</bean>
+
+	<bean id="topsize" class="java.awt.Dimension">
+		<constructor-arg>
+			<value>0</value>
+		</constructor-arg>
+		<constructor-arg>
+			<value>40</value>
+		</constructor-arg>
+	</bean>
+	<!-- 关闭事件监听器 -->
+	<bean id="ClosingListener" class="nc.ui.uif2.FunNodeClosingHandler">
+		<property name="cancelaction" ref="userCancelAction"></property>
+		<property name="saveaction" ref="userSaveAction"></property>
+		<property name="model" ref="userAppModel"></property>
+	</bean>
+	
+	
+	<bean id="modifyAction" class="nc.ui.uap.rbac.usermanage.actions.ModifyAction">
+		<property name="model" ref="userAppModel"></property>
+	</bean>
+	
+</beans>

@@ -9,8 +9,8 @@
 	<!-- 模型部分配置 -->
 
 	<!-- 单据操作代理 -->
-	<bean id="maintainProxy" class="cn.gaily.base.ui.proxy.BaseServiceProxy" > <!-- ##注入继承了BaseServiceProxy代理类 -->
-		<property name="billClazz" value=""/>  <!--类全路径-->
+	<bean id="maintainProxy" class="cn.gaily.reftable.proxy.RefTableServiceProxy" > <!-- ##注入继承了BaseServiceProxy代理类 -->
+		<property name="billClazz" value="cn.gaily.pub.vo.BaseCode"/>  <!--类全路径-->
 	</bean>
 		
 	<!-- 对象转换器工厂，由此获取操作对象的特征信息 -->
@@ -41,7 +41,7 @@
 		<property name="context" ref="context" />
 		<property name="nodeKeies">
 			<list>
-				<value>register_b</value>  <!-- ##单据模板注册nodekey -->
+				<value>b</value>  <!-- ##单据模板注册nodekey -->
 			</list>
 		</property>
 	</bean>
@@ -49,7 +49,7 @@
 	<!-- 查询模板加载bean -->
 	<bean id="queryTemplateContainer" class="nc.ui.uif2.editor.QueryTemplateContainer">
 		<property name="context" ref="context"></property>
-		<property name="nodeKey" value="register_q"></property> <!-- ##查询模板注册nodekey -->
+		<property name="nodeKey" value="q"></property> <!-- ##查询模板注册nodekey -->
 	</bean>
 
 	<!-- 界面元素 -->
@@ -77,15 +77,9 @@
 		<property name="params">
 			<list>
 				<bean class="nc.ui.uif2.editor.UserdefQueryParam">
-					<property name="mdfullname" value="mzbp.mz_business_reg" /> <!-- ##实体元数据的全名(spacename.entityname) -->
+					<property name="mdfullname" value="mgr.pubref" /> <!-- ##实体元数据的全名(spacename.entityname) -->
 					<property name="pos" value="0" />
 					<property name="prefix" value="vdef" />
-				</bean>
-				<bean class="nc.ui.uif2.editor.UserdefQueryParam">
-					<property name="mdfullname" value="mzbp.mz_business_reg" /> <!-- ##实体元数据的全名(spacename.entityname) -->
-					<property name="pos" value="1" />
-					<property name="prefix" value="vbdef" />
-					<property name="tabcode" value="xxx" /> <!-- ##子表页签编码，默认为字表VO名 -->
 				</bean>
 			</list>
 		</property>
@@ -126,15 +120,9 @@
 		<property name="params">
 			<list>
 				<bean class="nc.ui.uif2.editor.UserdefQueryParam">
-					<property name="mdfullname" value="mzbp.mz_business_reg" /> <!-- ##主表实体元数据的全名(spacename.entityname) -->
+					<property name="mdfullname" value="mgr.pubref" /> <!-- ##主表实体元数据的全名(spacename.entityname) -->
 					<property name="pos" value="0" />
 					<property name="prefix" value="vdef" />
-				</bean>
-				<bean class="nc.ui.uif2.editor.UserdefQueryParam">
-					<property name="mdfullname" value="mzbp.mz_business_reg" /> <!-- ## 子表实体元数据的全名(spacename.entityname) -->
-					<property name="pos" value="1" />
-					<property name="prefix" value="vbdef" />
-					<property name="tabcode" value="xxx" /> <!-- ##子表页签编码，默认为字表VO名 -->
 				</bean>
 			</list>
 		</property>
@@ -152,10 +140,7 @@
 		<property name="params">
 			<list>
 				<bean class="nc.ui.uif2.userdefitem.QueryParam">
-					<property name="mdfullname" value="mzbp.mz_business_reg" /> <!-- ##元数据全名 -->
-				</bean>
-				<bean class="nc.ui.uif2.userdefitem.QueryParam">
-					<property name="mdfullname" value="mzbp.mz_business_reg" /> <!-- ##元数据全名 -->
+					<property name="mdfullname" value="mgr.pubref" /> <!-- ##元数据全名 -->
 				</bean>
 				<bean class="nc.ui.uif2.userdefitem.QueryParam">
 					<property name="rulecode" value="materialassistant" />
@@ -238,37 +223,10 @@
 		</property>
 	</bean>
 
-	<!-- 事件监听 -->
-	<bean id="childrenPicky" class="nc.ui.pubapp.uif2app.event.ChildrenPicky">
-		<property name="billform" ref="billFormEditor" />
-		<property name="bodyVoClasses">
-			<list>
-				<value>com.ufgov.mz.mz.dsom.vo.MZBillReg</value>  <!-- ##子表VO全名 -->
-			</list>
-		</property>
-	</bean>
 	<bean id="eventMediator" class="nc.ui.pubapp.uif2app.model.AppEventHandlerMediator">
 		<property name="model" ref="manageAppModel" />
 		<property name="handlerGroup">
 			<list>
-				<!-- 表体字段编辑前事件 -->
-				<bean class="nc.ui.pubapp.uif2app.event.EventHandlerGroup">
-					<property name="event" value="nc.ui.pubapp.uif2app.event.card.CardBodyBeforeEditEvent" />
-					<property name="picky" ref="childrenPicky" />
-					<property name="handler">
-						<bean class="cn.gaily.base.ui.handler.BaseBodyBeforeEditHandler" />
-					</property>
-				</bean>
-
-				<!-- 表体字段编辑后事件 -->
-				<bean class="nc.ui.pubapp.uif2app.event.EventHandlerGroup">
-					<property name="event" value="nc.ui.pubapp.uif2app.event.card.CardBodyAfterEditEvent" />
-					<property name="picky" ref="childrenPicky" />
-					<property name="handler">
-						<bean class="cn.gaily.base.ui.handler.BaseBodyAfterEditHandler" />
-					</property>
-				</bean>	
-				
 				<!-- 表头表尾字段编辑前事件 -->
 				<bean class="nc.ui.pubapp.uif2app.event.EventHandlerGroup">
 					<property name="event" value="nc.ui.pubapp.uif2app.event.card.CardHeadTailBeforeEditEvent" />
@@ -430,13 +388,6 @@
 				</bean>
 			</list>
 		</property>
-	</bean>
-
-	<!-- model与界面的表体排序同步组件 -->
-	<bean id="billBodySortMediator" class="nc.ui.pubapp.uif2app.model.BillBodySortMediator">
-		<constructor-arg ref="manageAppModel" />
-		<constructor-arg ref="billFormEditor" />
-		<constructor-arg ref="listView" />
 	</bean>
 
 	<!-- 打开节点监听 -->
