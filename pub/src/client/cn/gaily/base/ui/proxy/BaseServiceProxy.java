@@ -7,6 +7,7 @@ import nc.ui.pubapp.uif2app.model.pagination.IPageQueryService;
 import nc.ui.pubapp.uif2app.query2.model.IQueryService;
 import nc.ui.querytemplate.querytree.IQueryScheme;
 import nc.ui.uif2.components.pagination.IPaginationQueryService;
+import nc.ui.uif2.model.IAppModelService;
 import nc.vo.pub.BusinessException;
 import nc.vo.pub.SuperVO;
 import nc.vo.pubapp.bill.pagination.PaginationTransferObject;

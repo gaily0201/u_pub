@@ -3,6 +3,7 @@ package cn.gaily.base.ui.util;
 import java.awt.Color;
 
 import nc.ui.pub.bill.BillCardPanel;
+import nc.ui.pub.bill.BillData;
 import nc.ui.pub.bill.BillItem;
 import nc.ui.pubapp.uif2app.view.BillForm;
 import nc.vo.pub.BusinessException;
@@ -113,6 +114,72 @@ public class TempletUtil {
 			}
 			
 		}
+	}
+	
+	/**
+	 * <p>方法名称：setItemVisiable</p>
+	 * <p>方法描述：设置表头表体项不显示</p>
+	 * @param editor	表单控件
+	 * @param items		单据名称
+	 * @param visiable	状态	 显示true;不显示false
+	 * @throws BusinessException
+	 * @author xiaoh
+	 * @since  2014-12-18
+	 * <p> history 2014-12-18 xiaoh  创建   <p>
+	 */
+	public static void setItemVisiable(BillForm editor, String[] items, boolean visiable) throws BusinessException{
+		if(editor==null||items==null||items.length<=0){
+			return;
+		}
+		BillCardPanel panel = editor.getBillCardPanel();
+		BillData bd = editor.getBillCardPanel().getBillData();
+		for (String item : items) {
+			getBillItem(bd, item).setShow(visiable);
+		}
+		panel.setBillData(bd);
+	}
+	
+	/**
+	 * <p>方法名称：setItemVisiable</p>
+	 * <p>方法描述：设置表头表体项不显示</p>
+	 * @param editor	表单控件
+	 * @param item		单据名称
+	 * @param visiable	状态	 显示true;不显示false
+	 * @throws BusinessException
+	 * @author xiaoh
+	 * @since  2014-12-18
+	 * <p> history 2014-12-18 xiaoh  创建   <p>
+	 */
+	public static void setItemVisiable(BillForm editor, String item, boolean visiable) throws BusinessException{
+		if(editor==null||item==null){
+			return;
+		}
+		BillCardPanel panel = editor.getBillCardPanel();
+		BillData bd = editor.getBillCardPanel().getBillData();
+		getBillItem(bd, item).setShow(visiable);
+		panel.setBillData(bd);
+	}
+	
+	/**
+	 * <p>方法名称：getBillItem</p>
+	 * <p>方法描述：通过单据模板数据控制获取单据项，兼容表头表体项</p>
+	 * @param bd
+	 * @param item
+	 * @author xiaoh
+	 * @since  2014-12-12
+	 */
+	private static BillItem getBillItem(BillData bd, String item) throws BusinessException{
+		if(bd==null||item==null){
+			return null;
+		}
+		BillItem billItem = bd.getHeadItem(item);
+		if(billItem==null){
+			billItem = bd.getBodyItem(item);
+		}
+		if(billItem==null){
+			throw new BusinessException("未获取到单据项,单据项名为："+item);
+		}
+		return billItem;
 	}
 	
 	/**

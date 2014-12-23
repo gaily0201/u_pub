@@ -1,6 +1,6 @@
 package cn.gaily.base.service;
 
-import java.util.List;
+import nc.itf.pubapp.pub.smart.ISmartService;
 import nc.ui.querytemplate.querytree.IQueryScheme;
 import nc.vo.pub.BusinessException;
 import nc.vo.pub.SuperVO;
@@ -13,7 +13,7 @@ import nc.vo.pubapp.pattern.model.entity.bill.AbstractBill;
  * <p>Copyright: Copyright (c) 2013</p>
  * @version 1.0
  */
-public interface IBaseService {
+public interface IBaseService extends ISmartService{
 
 	/**
 	 * <p>·½·¨Ãû³Æ£ºsave</p>

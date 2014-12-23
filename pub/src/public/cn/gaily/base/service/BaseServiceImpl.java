@@ -17,7 +17,10 @@ import nc.impl.pubapp.pattern.rule.ICompareRule;
 import nc.impl.pubapp.pattern.rule.IRule;
 import nc.impl.pubapp.pattern.rule.processer.AroundProcesser;
 import nc.impl.pubapp.pattern.rule.processer.CompareAroundProcesser;
+import nc.impl.pubapp.pub.smart.BatchSaveAction;
+import nc.impl.pubapp.pub.smart.SmartServiceImpl;
 import nc.ui.querytemplate.querytree.IQueryScheme;
+import nc.vo.bd.meta.BatchOperateVO;
 import nc.vo.pub.BusinessException;
 import nc.vo.pub.IAttributeMeta;
 import nc.vo.pub.ISuperVO;
@@ -33,6 +36,7 @@ import nc.vo.pubapp.pattern.exception.ExceptionUtils;
 import nc.vo.pubapp.pattern.model.entity.bill.AbstractBill;
 import nc.vo.pubapp.pattern.model.meta.entity.bill.IBillMeta;
 import nc.vo.pubapp.query2.sql.process.QuerySchemeProcessor;
+import nc.vo.uif2.LoginContext;
 import nc.vo.wfengine.core.application.IWorkflowGadget;
 import nc.vo.wfengine.core.application.WfGadgetContext;
 import cn.gaily.pub.util.CommonUtils;
@@ -43,7 +47,7 @@ import cn.gaily.pub.util.CommonUtils;
  * <p>Copyright: Copyright (c) 2013</p>
  * @version 1.0
  */
-public class BaseServiceImpl implements IBaseService, IWorkflowGadget {
+public class BaseServiceImpl extends SmartServiceImpl implements IBaseService, IWorkflowGadget  {
 	
 	@Override
 	public <T extends SuperVO> T[] save(T[] vos) throws BusinessException{
@@ -936,6 +940,23 @@ public class BaseServiceImpl implements IBaseService, IWorkflowGadget {
 	@Override
 	public Object undoBeforeActive(WfGadgetContext gc) throws BusinessException {
 		return null;
+	}
+
+	@Override
+	public BatchOperateVO batchSave(BatchOperateVO batchVO) throws BusinessException {
+		BatchSaveAction saveAction = new BatchSaveAction();
+	    BatchOperateVO retData = saveAction.batchSave(batchVO);
+	    return retData;
+	}
+
+	@Override
+	public ISuperVO[] queryByDataVisibilitySetting(LoginContext context, Class<? extends ISuperVO> clz) throws BusinessException {
+		return selectByWhereSql(null, clz);
+	}
+
+	@Override
+	public ISuperVO[] selectByWhereSql(String whereSql, Class<? extends ISuperVO> clz) throws BusinessException {
+		return super.selectByWhereSql(whereSql, clz);
 	}
 
 

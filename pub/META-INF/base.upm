@@ -5,5 +5,9 @@
 			<interface>cn.gaily.base.service.IBaseService</interface>
 			<implementation>cn.gaily.base.service.BaseServiceImpl</implementation>
 		</component>
+		<component priority="0" singleton="true" remote="true" tx="CMT" supportAlias="true" accessProtected="false">
+			<interface>cn.gaily.base.service.ISingleService</interface>
+			<implementation>cn.gaily.base.service.SingleServiceImpl</implementation>
+		</component>
 	</public>
 </module>

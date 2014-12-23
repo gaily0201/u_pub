@@ -8,7 +8,7 @@ public class BaseAddHandler implements IAppEventHandler<AddEvent> {
 
 	@Override
 	public void handleAppEvent(AddEvent e) {
-		
+
 	}
 	
 }
