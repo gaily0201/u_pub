@@ -55,6 +55,7 @@
 		<property name="service" ref="userSerivce"></property>
 		<property name="businessObjectAdapterFactory" ref="boadapterfacotry"></property>
 	</bean>
+	
 	<bean id="userRelateGroupModel"
 		class="nc.ui.uap.rbac.usermanage.model.UserRelateGroupBillModel">
 		<property name="businessObjectAdapterFactory" ref="boadapterfacotry"></property>

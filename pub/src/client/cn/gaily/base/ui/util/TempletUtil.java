@@ -161,6 +161,27 @@ public class TempletUtil {
 	}
 	
 	/**
+	 * <p>方法名称：setItemName</p>
+	 * <p>方法描述：设置列显示名</p>
+	 * @param editor	表单控件
+	 * @param item		单据名称
+	 * @param name		名称
+	 * @throws BusinessException
+	 * @author xiaoh
+	 * @since  2015-4-1
+	 * <p> history 2015-4-1 xiaoh  创建   <p>
+	 */
+	public static void setItemName(BillForm editor, String item, String name) throws BusinessException{
+		if(editor==null||item==null){
+			return;
+		}
+		BillCardPanel panel = editor.getBillCardPanel();
+		BillData bd = editor.getBillCardPanel().getBillData();
+		getBillItem(bd, item).setName(name);
+		panel.setBillData(bd);
+	}
+	
+	/**
 	 * <p>方法名称：getBillItem</p>
 	 * <p>方法描述：通过单据模板数据控制获取单据项，兼容表头表体项</p>
 	 * @param bd
@@ -203,5 +224,8 @@ public class TempletUtil {
 		}
 		return billItem;
 	}
+	
+	
+	
 	
 }
